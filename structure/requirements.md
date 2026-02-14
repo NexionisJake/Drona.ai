@@ -351,6 +351,23 @@ flowchart TD
 | Full `main.py` content  | ✅ Yes    | So Claude understands surrounding variables       |
 | Previous Q&A            | ✅ Yes    | When sending Q2, include Q1 + user's A1           |
 
+### 8.5 Proactive Mentor Mode (Zero-Cost Help)
+The IDE features a dual-trigger Mentor Mode to assist developers without affecting their Builder Score.
+
+**Trigger A: Automatic Error Detection**
+- **Mechanism:** Hook into `monaco.editor.onDidChangeMarkers`.
+- **Logic:** Filter for `MarkerSeverity.Error`. If an error persists for > 2000ms (debounced), extract the error message and the offending line of code.
+- **Action:** Send silently to `/analyze_error`. Claude streams a proactive hint into the sidebar (e.g., "I notice a connection timeout error. Have you considered your connection pool limits?").
+
+**Trigger B: Manual Highlight Query (Ctrl+M)**
+- **Mechanism:** User highlights code and presses `Ctrl+M`.
+- **Logic:** Capture `editor.getModel().getValueInRange(editor.getSelection())`. Focus the sidebar `<textarea>`.
+- **Action:** User types their question. Payload sent to `/mentor_chat` containing the highlighted snippet, full file context, and user query.
+
+**Mentor Mode Rules & Score Economy:**
+- **Cost:** 0 points. Asking for help or receiving error hints does not penalize the Builder Score.
+- **Strict Output Constraints:** The AI must output ONLY step-by-step logic, architectural trade-offs, and official documentation links. It is STRICTLY FORBIDDEN from outputting valid Python syntax. All structural examples must be in language-agnostic pseudo-code.
+
 ---
 
 ## 9. Core Feature: Undo Escape Hatch

@@ -129,3 +129,116 @@ export async function validateAnswer(params: ValidateParams): Promise<ValidateRe
         };
     }
 }
+
+export interface AnalyzeErrorParams {
+    errorMessage: string;
+    lineCode: string;
+    contextSummary: string;
+    onChunk: (text: string) => void;
+    onDone: () => void;
+    onError: (error: string) => void;
+}
+
+export interface MentorChatParams {
+    selectedCode: string;
+    userQuery: string;
+    contextSummary: string;
+    onChunk: (text: string) => void;
+    onDone: () => void;
+    onError: (error: string) => void;
+}
+
+export async function analyzeError({
+    errorMessage,
+    lineCode,
+    contextSummary,
+    onChunk,
+    onDone,
+    onError
+}: AnalyzeErrorParams): Promise<void> {
+    const endpoint = "/analyze_error";
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                error_message: errorMessage,
+                line_code: lineCode,
+                context_summary: contextSummary
+            })
+        });
+
+        if (!response.ok) throw new Error("Backend connection failed");
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) throw new Error("No response body");
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n\n");
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    const data = line.replace("data: ", "");
+                    if (data === "[DONE]") {
+                        onDone();
+                        return;
+                    }
+                    onChunk(data);
+                }
+            }
+        }
+    } catch (err: any) {
+        onError(err.message);
+    }
+}
+
+export async function mentorChat({
+    selectedCode,
+    userQuery,
+    contextSummary,
+    onChunk,
+    onDone,
+    onError
+}: MentorChatParams): Promise<void> {
+    const endpoint = "/mentor_chat";
+    try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                selected_code: selectedCode,
+                user_query: userQuery,
+                context_summary: contextSummary
+            })
+        });
+
+        if (!response.ok) throw new Error("Backend connection failed");
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) throw new Error("No response body");
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n\n");
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    const data = line.replace("data: ", "");
+                    if (data === "[DONE]") {
+                        onDone();
+                        return;
+                    }
+                    onChunk(data);
+                }
+            }
+        }
+    } catch (err: any) {
+        onError(err.message);
+    }
+}
+

@@ -741,6 +741,30 @@ curl -X POST http://localhost:8000/mock_stream \
 
 ---
 
+## Phase 4.5: Proactive Mentor Mode
+
+> **Goal**: Implement automatic error detection and manual Ctrl+M highlighting.
+> **Dependency**: Phase 4 (Sidebar and API communication must be wired).
+
+### 4.5.1 Implement Automatic Error Detection
+- [ ] In `CodeEditor.tsx`, add listener: `monaco.editor.onDidChangeMarkers`.
+- [ ] Filter markers for `severity === monaco.MarkerSeverity.Error`.
+- [ ] Debounce the event by 2000ms to avoid spamming while typing.
+- [ ] Extract marker message and line number, send to backend to trigger proactive AI message in sidebar.
+
+### 4.5.2 Implement Manual Highlight (Ctrl+M)
+- [ ] In `CodeEditor.tsx`, add keybinding for `Ctrl+M` using `editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, callback)`.
+- [ ] In callback, capture `editor.getModel().getValueInRange(editor.getSelection())`.
+- [ ] Set frontend state `highlightedContext` and focus the sidebar chat input.
+
+### 4.5.3 Update Claude System Prompt for Mentor Mode
+- [ ] Create new prompt template for `/mentor_chat`.
+- [ ] Add strict constraint: "You are FORBIDDEN from outputting any valid Python code. You may only use conceptual pseudo-code, step-by-step logic, and link to official docs."
+
+---
+
+---
+
 ### 4.1 Create API Service Layer
 
 - [ ] Create `src/services/api.ts`

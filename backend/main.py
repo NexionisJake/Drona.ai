@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
 
-from models.schemas import AnalyzePasteRequest, ValidateAnswerRequest, ValidateAnswerResponse
+from models.schemas import AnalyzePasteRequest, ValidateAnswerRequest, ValidateAnswerResponse, AnalyzeErrorRequest, MentorChatRequest
 from services import claude_service, mock_service
 
 load_dotenv()
@@ -32,12 +32,16 @@ async def analyze_paste(request: AnalyzePasteRequest):
     """
     Streams Claude's first question via SSE.
     """
+    if not claude_service.client:
+        # Fallback to mock
+        async def mock_event_generator():
+            async for chunk in mock_service.mock_stream_question(request.code_snippet, request.context_summary):
+                yield {"data": chunk}
+            yield {"data": "[DONE]"}
+        return EventSourceResponse(mock_event_generator())
+
     async def event_generator():
         try:
-            # Using stream_first_question generator with timeout on each chunk? 
-            # No, stream itself needs to be responsive.
-            # Timeout for the *first* chunk or whole stream?
-            # Let's put a timeout on the stream iteration.
             iterator = claude_service.stream_first_question(request.code_snippet, request.context_summary)
             async for chunk in iterator:
                 yield {"data": chunk}
@@ -58,6 +62,15 @@ async def validate_answer(request: ValidateAnswerRequest):
     If Q1 -> Return Q2 (next_question).
     If Q2 -> Return Pass/Fail.
     """
+    if not claude_service.client:
+        # Fallback to mock
+        if request.question_number == 1:
+            q2_text = await mock_service.mock_second_question(request.code_snippet, request.question, request.user_answer)
+            return ValidateAnswerResponse(status="next_question", feedback="Good start (Demo Mode).", next_question=q2_text)
+        elif request.question_number == 2:
+            result = await mock_service.mock_evaluate_combined(request.code_snippet, request.question_1 or "", request.answer_1 or "", request.question, request.user_answer)
+            return ValidateAnswerResponse(status=result["status"], feedback=result["feedback"] + " (Demo Mode)")
+    
     if request.question_number == 1:
         try:
             # User answered Q1. Generate Q2.
@@ -105,6 +118,56 @@ async def validate_answer(request: ValidateAnswerRequest):
     
     else:
         raise HTTPException(status_code=400, detail="Invalid question number")
+
+@app.post("/analyze_error")
+async def analyze_error(request: AnalyzeErrorRequest):
+    """
+    Streams a proactive hint for an error.
+    """
+    if not claude_service.client:
+        # Fallback to mock
+        async def mock_gen():
+            async for chunk in mock_service.mock_stream_error_hint(request.error_message, request.line_code, request.context_summary):
+                yield {"data": chunk}
+            yield {"data": "[DONE]"}
+        return EventSourceResponse(mock_gen())
+
+    async def event_generator():
+        try:
+            iterator = claude_service.stream_error_hint(request.error_message, request.line_code, request.context_summary)
+            async for chunk in iterator:
+                yield {"data": chunk}
+            yield {"data": "[DONE]"}
+        except Exception as e:
+             yield {"data": f"Error: {str(e)}"}
+             yield {"data": "[DONE]"}
+
+    return EventSourceResponse(event_generator())
+
+@app.post("/mentor_chat")
+async def mentor_chat(request: MentorChatRequest):
+    """
+    Streams response to manual mentor query.
+    """
+    if not claude_service.client:
+        # Fallback to mock
+        async def mock_gen():
+            async for chunk in mock_service.mock_stream_mentor_chat(request.selected_code, request.user_query, request.context_summary):
+                yield {"data": chunk}
+            yield {"data": "[DONE]"}
+        return EventSourceResponse(mock_gen())
+
+    async def event_generator():
+        try:
+            iterator = claude_service.stream_mentor_chat(request.selected_code, request.user_query, request.context_summary)
+            async for chunk in iterator:
+                yield {"data": chunk}
+            yield {"data": "[DONE]"}
+        except Exception as e:
+             yield {"data": f"Error: {str(e)}"}
+             yield {"data": "[DONE]"}
+
+    return EventSourceResponse(event_generator())
 
 # --- Mock Endpoints (Fallback) ---
 

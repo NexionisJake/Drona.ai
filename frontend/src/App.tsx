@@ -9,7 +9,8 @@ import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
 import { useUndoEscape } from './hooks/useUndoEscape';
 import { useBuilderScore } from './hooks/useBuilderScore';
-import { analyzePaste, validateAnswer } from './services/api';
+import { analyzePaste, validateAnswer, analyzeError, mentorChat } from './services/api';
+import type { Message } from './components/MentorChat';
 
 function App() {
   const { score, updateOnTyping, deductScore, addScore } = useBuilderScore(0);
@@ -25,6 +26,12 @@ function App() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [q1Text, setQ1Text] = useState("");
   const [a1Text, setA1Text] = useState("");
+
+  // Mentor Chat State
+  const [mentorMode, setMentorMode] = useState<'idle' | 'active' | 'chat'>('idle');
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [isChatStreaming, setIsChatStreaming] = useState(false);
+  const [selectedContext, setSelectedContext] = useState("");
 
   const editorRef = useRef<any>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -43,6 +50,7 @@ function App() {
     setStreamedText("");
     setQuestionNumber(1);
     setIsEvaluating(false);
+    setMentorMode('active'); // Quiz active
 
     abortControllerRef.current = new AbortController();
 
@@ -71,10 +79,7 @@ function App() {
 
     const penalty = lineCount * -0.2;
     setScorePenalty(penalty);
-    // setScore(prev => prev + penalty); // Replaced by hook
-    deductScore(penalty); // penalty is negative? No, logic above said penalty = lineCount * -0.2. So it is negative.
-    // Wait, deductScore(amount) -> setScore(prev + amount).
-    // So passing negative penalty works.
+    deductScore(penalty);
 
     toast.error(`Vibe Coding Detected! ${lineCount} lines pasted.`);
 
@@ -106,10 +111,7 @@ function App() {
         // Unlock!
         toast.success("Unlocked! Penalty refunded.");
         setIsLocked(false);
-        // setScore(prev => prev - scorePenalty); // Replaced by hook
-        // Refund means remove the penalty. Since penalty is negative (-5), we subtract it?
-        // prev - (-5) = prev + 5.
-        // addScore(-scorePenalty) -> addScore(5).
+        setMentorMode('idle');
         addScore(-scorePenalty);
       } else {
         // Fail
@@ -125,7 +127,7 @@ function App() {
 
   const handleUndoComplete = () => {
     setIsLocked(false);
-    // setScore(prev => prev - scorePenalty); // Replaced by hook
+    setMentorMode('idle');
     addScore(-scorePenalty);
 
     setQuestionNumber(1);
@@ -139,6 +141,77 @@ function App() {
     }
 
     toast.success("Paste undone. Score restored.");
+  };
+
+  // --- Mentor Mode Handlers ---
+
+  const handleErrorDetected = async (errorMsg: string, lineContent: string) => {
+    if (isLocked || mentorMode === 'active') return;
+
+    setMentorMode('chat');
+    // Start a new chat session with the hint
+    const initialMsg: Message = { role: 'assistant', content: '' };
+    setChatMessages([initialMsg]);
+    setIsChatStreaming(true);
+
+    const context = editorRef.current?.getModel()?.getValue() || "";
+
+    await analyzeError({
+      errorMessage: errorMsg,
+      lineCode: lineContent,
+      contextSummary: context,
+      onChunk: (text) => {
+        setChatMessages(prev => {
+          const last = prev[prev.length - 1];
+          return [...prev.slice(0, -1), { ...last, content: last.content + text }];
+        });
+      },
+      onDone: () => setIsChatStreaming(false),
+      onError: (err) => {
+        console.error(err);
+        setIsChatStreaming(false);
+      }
+    });
+  };
+
+  const handleMentorTrigger = (code: string) => {
+    if (isLocked || mentorMode === 'active') return;
+
+    setMentorMode('chat');
+    setSelectedContext(code);
+    setChatMessages([]);
+    toast("Mentor Mode Activated", { icon: "🧠" });
+    // We wait for user to type their first message in the chat
+  };
+
+  const handleChatMessage = async (msg: string) => {
+    // Add user message
+    const userMsg: Message = { role: 'user', content: msg };
+    setChatMessages(prev => [...prev, userMsg]);
+
+    // Add placeholder assistant message
+    setChatMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+    setIsChatStreaming(true);
+
+    const context = editorRef.current?.getModel()?.getValue() || "";
+
+    await mentorChat({
+      selectedCode: selectedContext, // Might be empty if just chatting generally, or highlighting
+      userQuery: msg,
+      contextSummary: context,
+      onChunk: (text) => {
+        setChatMessages(prev => {
+          const last = prev[prev.length - 1];
+          const others = prev.slice(0, -1);
+          return [...others, { ...last, content: last.content + text }];
+        });
+      },
+      onDone: () => setIsChatStreaming(false),
+      onError: (err) => {
+        toast.error(err);
+        setIsChatStreaming(false);
+      }
+    });
   };
 
   usePasteDetection({
@@ -164,6 +237,8 @@ function App() {
             isLocked={isLocked}
             onEditorMount={handleEditorMount}
             onContentChange={handleEditorChange}
+            onErrorDetected={handleErrorDetected}
+            onMentorTrigger={handleMentorTrigger}
           />
           <LockOverlay
             isVisible={isLocked}
@@ -174,11 +249,14 @@ function App() {
 
         <div className="w-[30%] h-full bg-[#0d1117]">
           <MentorSidebar
-            quizState={isLocked ? 'active' : 'idle'}
+            quizState={mentorMode}
             streamedText={streamedText}
             isEvaluating={isEvaluating}
             questionNumber={questionNumber}
             onAnswerSubmit={handleAnswerSubmit}
+            messages={chatMessages}
+            isStreaming={isChatStreaming}
+            onChatMessage={handleChatMessage}
           />
         </div>
       </div>
@@ -194,3 +272,4 @@ function App() {
 }
 
 export default App;
+

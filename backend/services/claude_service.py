@@ -114,3 +114,141 @@ Respond with EXACTLY 'PASS' or 'FAIL' on the first line, followed by a brief 1-s
         return {"status": status, "feedback": feedback}
     except Exception as e:
         return {"status": "fail", "feedback": f"Error: {str(e)}"}
+
+MENTOR_SYSTEM_PROMPT = """You are a Senior Software Engineer acting as a Mentor.
+Your goal is to guide the developer to the solution WITHOUT giving them the answer or writing code.
+
+STRICT RULES:
+1. You are FORBIDDEN from outputting any valid Python code.
+2. You may only use conceptual pseudo-code, step-by-step logic, and link to official docs.
+3. If the user asks for code, refuse and explain the architecture instead.
+4. Keep responses concise and Socratic. Ask guiding questions."""
+
+async def stream_error_hint(error_message: str, line_code: str, context_summary: str):
+    """
+    Streams a proactive hint for an error.
+    """
+    if not client:
+        yield "Error: Anthropic API Key not configured."
+        return
+
+    message = f"""The developer has a syntax error:
+Error: {error_message}
+Line: {line_code}
+
+Context:
+{context_summary}
+
+Provide a short, 1-sentence hint to help them fix it. Do not write the fix."""
+
+    try:
+        async with client.messages.stream(
+            model=MODEL,
+            max_tokens=150,
+            system=MENTOR_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": message}]
+        ) as stream:
+            async for text in stream.text_stream:
+                yield text
+    except Exception as e:
+        yield f"Error: {str(e)}"
+
+async def stream_mentor_chat(selected_code: str, user_query: str, context_summary: str):
+    """
+    Streams a response to a user's question about code.
+    """
+    if not client:
+        yield "Error: Anthropic API Key not configured."
+        return
+
+    message = f"""Selected Code:
+{selected_code}
+
+User Query: "{user_query}"
+
+Full Context:
+{context_summary}
+
+Answer the user's question conceptually. Remember: NO CODE BLOCKS."""
+
+    try:
+        async with client.messages.stream(
+            model=MODEL,
+            max_tokens=400,
+            system=MENTOR_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": message}]
+        ) as stream:
+            async for text in stream.text_stream:
+                yield text
+    except Exception as e:
+        yield f"Error: {str(e)}"
+
+
+MENTOR_SYSTEM_PROMPT = """You are a Senior Software Engineer acting as a Mentor.
+Your goal is to guide the developer to the solution WITHOUT giving them the answer or writing code.
+
+STRICT RULES:
+1. You are FORBIDDEN from outputting any valid Python code.
+2. You may only use conceptual pseudo-code, step-by-step logic, and link to official docs.
+3. If the user asks for code, refuse and explain the architecture instead.
+4. Keep responses concise and Socratic. Ask guiding questions."""
+
+async def stream_error_hint(error_message: str, line_code: str, context_summary: str):
+    """
+    Streams a proactive hint for an error.
+    """
+    if not client:
+        yield "Error: Anthropic API Key not configured."
+        return
+
+    message = f"""The developer has a syntax error:
+Error: {error_message}
+Line: {line_code}
+
+Context:
+{context_summary}
+
+Provide a short, 1-sentence hint to help them fix it. Do not write the fix."""
+
+    try:
+        async with client.messages.stream(
+            model=MODEL,
+            max_tokens=150,
+            system=MENTOR_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": message}]
+        ) as stream:
+            async for text in stream.text_stream:
+                yield text
+    except Exception as e:
+        yield f"Error: {str(e)}"
+
+async def stream_mentor_chat(selected_code: str, user_query: str, context_summary: str):
+    """
+    Streams a response to a user's question about code.
+    """
+    if not client:
+        yield "Error: Anthropic API Key not configured."
+        return
+
+    message = f"""Selected Code:
+{selected_code}
+
+User Query: "{user_query}"
+
+Full Context:
+{context_summary}
+
+Answer the user's question conceptually. Remember: NO CODE BLOCKS."""
+
+    try:
+        async with client.messages.stream(
+            model=MODEL,
+            max_tokens=400,
+            system=MENTOR_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": message}]
+        ) as stream:
+            async for text in stream.text_stream:
+                yield text
+    except Exception as e:
+        yield f"Error: {str(e)}"
+

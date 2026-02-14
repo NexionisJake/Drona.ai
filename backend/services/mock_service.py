@@ -24,3 +24,18 @@ async def mock_evaluate_combined(code_snippet: str, q1: str, a1: str, q2: str, a
         "status": "pass", 
         "feedback": "Good understanding demonstrated. Your editor is now unlocked."
     }
+
+async def mock_stream_error_hint(error_message: str, line_code: str, context_summary: str):
+    """Stream a mock hint."""
+    hint = "[Demo Mode] I notice a possible syntax error here. In Python, ensure all blocks starting with 'def' or 'if' end with a colon. Have you checked line endings?"
+    for word in hint.split(" "):
+        yield word + " "
+        await asyncio.sleep(0.05)
+
+async def mock_stream_mentor_chat(selected_code: str, user_query: str, context_summary: str):
+    """Stream a mock chat response."""
+    response = "[Demo Mode] That's an interesting question. In this architecture, this specific block handles the request lifecycle. It ensures that all incoming requests are properly authenticated before being passed to the business logic layer. Notice how the middleware intercepts the call first?"
+    for word in response.split(" "):
+        yield word + " "
+        await asyncio.sleep(0.05)
+
