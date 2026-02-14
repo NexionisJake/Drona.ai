@@ -8,10 +8,11 @@ import { Toaster, toast } from 'react-hot-toast';
 import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
 import { useUndoEscape } from './hooks/useUndoEscape';
+import { useBuilderScore } from './hooks/useBuilderScore';
 import { analyzePaste, validateAnswer } from './services/api';
 
 function App() {
-  const [score, setScore] = useState(0);
+  const { score, updateOnTyping, deductScore, addScore } = useBuilderScore(0);
   const [isLocked, setIsLocked] = useState(false);
   const [linesPasted, setLinesPasted] = useState(0);
   const [scorePenalty, setScorePenalty] = useState(0);
@@ -30,6 +31,12 @@ function App() {
 
   const handleEditorMount: OnMount = (editor) => {
     editorRef.current = editor;
+  };
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value && !isLocked) {
+      updateOnTyping(value);
+    }
   };
 
   const startQuiz = async (code: string) => {
@@ -64,7 +71,10 @@ function App() {
 
     const penalty = lineCount * -0.2;
     setScorePenalty(penalty);
-    setScore(prev => prev + penalty);
+    // setScore(prev => prev + penalty); // Replaced by hook
+    deductScore(penalty); // penalty is negative? No, logic above said penalty = lineCount * -0.2. So it is negative.
+    // Wait, deductScore(amount) -> setScore(prev + amount).
+    // So passing negative penalty works.
 
     toast.error(`Vibe Coding Detected! ${lineCount} lines pasted.`);
 
@@ -96,7 +106,11 @@ function App() {
         // Unlock!
         toast.success("Unlocked! Penalty refunded.");
         setIsLocked(false);
-        setScore(prev => prev - scorePenalty);
+        // setScore(prev => prev - scorePenalty); // Replaced by hook
+        // Refund means remove the penalty. Since penalty is negative (-5), we subtract it?
+        // prev - (-5) = prev + 5.
+        // addScore(-scorePenalty) -> addScore(5).
+        addScore(-scorePenalty);
       } else {
         // Fail
         toast.error("Explanation failed. Try again.");
@@ -111,7 +125,9 @@ function App() {
 
   const handleUndoComplete = () => {
     setIsLocked(false);
-    setScore(prev => prev - scorePenalty); // Refund penalty
+    // setScore(prev => prev - scorePenalty); // Replaced by hook
+    addScore(-scorePenalty);
+
     setQuestionNumber(1);
     setStreamedText("");
     setPastedCode("");
@@ -147,6 +163,7 @@ function App() {
           <CodeEditor
             isLocked={isLocked}
             onEditorMount={handleEditorMount}
+            onContentChange={handleEditorChange}
           />
           <LockOverlay
             isVisible={isLocked}
