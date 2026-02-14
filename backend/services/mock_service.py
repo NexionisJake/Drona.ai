@@ -1,6 +1,5 @@
 
 import asyncio
-import random
 
 MOCK_Q1 = "Hold up. You just pasted a database connection block but didn't include a teardown method. What happens to the connection pool if this fails?"
 MOCK_Q2 = "Okay, assuming you add a teardown, explain the time complexity of the nested loop on line 14 of that snippet."
@@ -32,7 +31,7 @@ async def mock_stream_error_hint(error_message: str, line_code: str, context_sum
         yield word + " "
         await asyncio.sleep(0.05)
 
-async def mock_stream_mentor_chat(selected_code: str, user_query: str, context_summary: str):
+async def mock_stream_mentor_chat(selected_code: str, user_query: str, context_summary: str, full_file: str = ""):
     """Stream a mock chat response."""
     response = "[Demo Mode] That's an interesting question. In this architecture, this specific block handles the request lifecycle. It ensures that all incoming requests are properly authenticated before being passed to the business logic layer. Notice how the middleware intercepts the call first?"
     for word in response.split(" "):

@@ -1,13 +1,15 @@
 import React from 'react';
-import QuizChat from './QuizChat';
+import QuizChat, { type QuizMessage } from './QuizChat';
 import MentorChat, { type Message } from './MentorChat';
-import { Brain, Radar, Sparkles } from 'lucide-react';
+import { Brain, Sparkles, Zap } from 'lucide-react';
+import { TextShimmer } from './TextShimmer';
 
 interface MentorSidebarProps {
     quizState: 'idle' | 'active' | 'chat';
     streamedText?: string;
     isEvaluating?: boolean;
     questionNumber?: number;
+    quizMessages?: QuizMessage[];
     onAnswerSubmit?: (answer: string) => void;
 
     // Chat Props
@@ -21,6 +23,7 @@ const MentorSidebar: React.FC<MentorSidebarProps> = ({
     streamedText = "",
     isEvaluating = false,
     questionNumber = 1,
+    quizMessages = [],
     onAnswerSubmit = () => { },
     messages = [],
     isStreaming = false,
@@ -44,12 +47,11 @@ const MentorSidebar: React.FC<MentorSidebarProps> = ({
 
             {quizState === 'idle' ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-[#0d1117]">
-                    <div className="relative flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-500/10 border border-blue-500/20">
-                        <Radar className="w-8 h-8 text-blue-400 animate-pulse" />
+                    <div className="flex flex-col items-center p-8 text-center text-gray-500 animate-pulse">
+                        <Zap size={48} className="mb-4 opacity-20" />
+                        <TextShimmer className="italic text-sm">Scanning for vibe coding...</TextShimmer>
+                        <p className="text-xs mt-2 opacity-50">Paste detection active</p>
                     </div>
-                    <p className="text-sm text-[#7d8590] font-medium tracking-wide">
-                        Scanning for vibe coding...
-                    </p>
                     <p className="text-xs text-[#484f58] mt-2">
                         Ctrl+M to ask Mentor
                     </p>
@@ -57,6 +59,7 @@ const MentorSidebar: React.FC<MentorSidebarProps> = ({
             ) : quizState === 'active' ? (
                 <div className="flex-1 overflow-hidden">
                     <QuizChat
+                        messages={quizMessages}
                         streamedText={streamedText}
                         isEvaluating={isEvaluating}
                         questionNumber={questionNumber}

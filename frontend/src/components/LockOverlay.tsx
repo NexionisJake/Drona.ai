@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface LockOverlayProps {
     isVisible: boolean;
@@ -8,18 +8,42 @@ interface LockOverlayProps {
 }
 
 const LockOverlay: React.FC<LockOverlayProps> = ({ isVisible, linesPasted, scorePenalty }) => {
-    if (!isVisible) return null;
+    // Keep in DOM briefly after hiding to allow exit animation
+    const [shouldRender, setShouldRender] = useState(false);
+    const [animateIn, setAnimateIn] = useState(false);
+
+    useEffect(() => {
+        if (isVisible) {
+            setShouldRender(true);
+            // Trigger enter animation on next frame
+            requestAnimationFrame(() => setAnimateIn(true));
+        } else {
+            setAnimateIn(false);
+            // Remove from DOM after exit animation
+            const timer = setTimeout(() => setShouldRender(false), 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isVisible]);
+
+    if (!shouldRender) return null;
 
     return (
         <div
             className="absolute inset-0 z-50 flex items-center justify-center pointer-events-auto"
             style={{
-                // Directly apply styles for robustness
-                backdropFilter: "blur(4px)",
-                backgroundColor: "rgba(0, 0, 0, 0.5)"
+                backdropFilter: animateIn ? "blur(4px)" : "blur(0px)",
+                backgroundColor: animateIn ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0)",
+                transition: "backdrop-filter 300ms ease-in-out, background-color 300ms ease-in-out"
             }}
         >
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-lg w-full shadow-2xl text-center transform transition-all scale-100">
+            <div
+                className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-lg w-full shadow-2xl text-center"
+                style={{
+                    transform: animateIn ? "scale(1)" : "scale(0.9)",
+                    opacity: animateIn ? 1 : 0,
+                    transition: "transform 300ms ease-out, opacity 300ms ease-out"
+                }}
+            >
                 <div className="flex justify-center mb-4">
                     <span className="text-4xl filter drop-shadow-md">⚠️</span>
                 </div>

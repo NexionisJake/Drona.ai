@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Send, User, Bot } from 'lucide-react';
+import { TextShimmer } from './TextShimmer';
 
 export interface Message {
     role: 'user' | 'assistant';
@@ -48,8 +49,8 @@ const MentorChat: React.FC<MentorChatProps> = ({
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-lg p-3 ${msg.role === 'user'
-                                ? 'bg-[#1f6feb] text-white'
-                                : 'bg-[#161b22] border border-[#30363d]'
+                            ? 'bg-[#1f6feb] text-white'
+                            : 'bg-[#161b22] border border-[#30363d]'
                             }`}>
                             <div className="prose prose-invert prose-sm max-w-none">
                                 <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -58,13 +59,13 @@ const MentorChat: React.FC<MentorChatProps> = ({
                     </div>
                 ))}
 
-                {isStreaming && (
+                {isStreaming && (!messages.length || messages[messages.length - 1].content === '') && (
                     <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0 animate-pulse">
                             <Bot size={16} />
                         </div>
                         <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3">
-                            <span className="text-gray-500 text-sm">Thinking...</span>
+                            <TextShimmer className="text-sm text-purple-400">Thinking...</TextShimmer>
                         </div>
                     </div>
                 )}

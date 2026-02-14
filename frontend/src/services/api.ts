@@ -46,6 +46,72 @@ async function fetchWithTimeout(resource: RequestInfo, options: RequestInit & { 
     }
 }
 
+/**
+ * Process SSE events from a buffered string.
+ * Handles the "data: ..." format, calling onChunk for each token
+ * and returning true if [DONE] was received.
+ */
+function processSSEEvents(
+    eventStr: string,
+    onChunk: (text: string) => void,
+    onDone: () => void
+): boolean {
+    const lines = eventStr.split("\n");
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("data: ")) {
+            const data = trimmed.replace("data: ", "");
+            if (data === "[DONE]") {
+                onDone();
+                return true;
+            }
+            onChunk(data);
+        }
+    }
+    return false;
+}
+
+/**
+ * Read an SSE stream with proper chunk buffering.
+ * Accumulates raw bytes and splits by \n\n boundaries
+ * so partial chunks don't cause parse errors.
+ */
+async function readSSEStream(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    onChunk: (text: string) => void,
+    onDone: () => void
+): Promise<void> {
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+            // Process any remaining buffer content
+            if (buffer.trim()) {
+                const isDone = processSSEEvents(buffer, onChunk, onDone);
+                if (isDone) return;
+            }
+            onDone();
+            return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Split by double newline (SSE event boundary)
+        const events = buffer.split("\n\n");
+        // Keep the last (potentially incomplete) chunk in the buffer
+        buffer = events.pop() || "";
+
+        for (const event of events) {
+            if (!event.trim()) continue;
+            const isDone = processSSEEvents(event, onChunk, onDone);
+            if (isDone) return;
+        }
+    }
+}
+
 export async function analyzePaste({
     codeSnippet,
     contextSummary,
@@ -67,28 +133,9 @@ export async function analyzePaste({
         if (!response.ok) throw new Error("Backend connection failed");
 
         const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-
         if (!reader) throw new Error("No response body");
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n\n");
-
-            for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                    const data = line.replace("data: ", "");
-                    if (data === "[DONE]") {
-                        onDone();
-                        return;
-                    }
-                    onChunk(data);
-                }
-            }
-        }
+        await readSSEStream(reader, onChunk, onDone);
     } catch (err: any) {
         if (err.name === 'AbortError') {
             onError("Timeout");
@@ -141,8 +188,10 @@ export interface AnalyzeErrorParams {
 
 export interface MentorChatParams {
     selectedCode: string;
+    fullFile: string;
     userQuery: string;
     contextSummary: string;
+    history?: string;
     onChunk: (text: string) => void;
     onDone: () => void;
     onError: (error: string) => void;
@@ -156,7 +205,7 @@ export async function analyzeError({
     onDone,
     onError
 }: AnalyzeErrorParams): Promise<void> {
-    const endpoint = "/analyze_error";
+    const endpoint = "/analyze_error"; // mock fallback handled server-side
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: "POST",
@@ -171,25 +220,9 @@ export async function analyzeError({
         if (!response.ok) throw new Error("Backend connection failed");
 
         const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
         if (!reader) throw new Error("No response body");
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n\n");
-            for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                    const data = line.replace("data: ", "");
-                    if (data === "[DONE]") {
-                        onDone();
-                        return;
-                    }
-                    onChunk(data);
-                }
-            }
-        }
+        await readSSEStream(reader, onChunk, onDone);
     } catch (err: any) {
         onError(err.message);
     }
@@ -197,46 +230,34 @@ export async function analyzeError({
 
 export async function mentorChat({
     selectedCode,
+    fullFile,
     userQuery,
     contextSummary,
+    history,
     onChunk,
     onDone,
     onError
 }: MentorChatParams): Promise<void> {
-    const endpoint = "/mentor_chat";
+    const endpoint = "/mentor_chat"; // mock fallback handled server-side
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 selected_code: selectedCode,
+                full_file: fullFile,
                 user_query: userQuery,
-                context_summary: contextSummary
+                context_summary: contextSummary,
+                history: history || null
             })
         });
 
         if (!response.ok) throw new Error("Backend connection failed");
 
         const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
         if (!reader) throw new Error("No response body");
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n\n");
-            for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                    const data = line.replace("data: ", "");
-                    if (data === "[DONE]") {
-                        onDone();
-                        return;
-                    }
-                    onChunk(data);
-                }
-            }
-        }
+        await readSSEStream(reader, onChunk, onDone);
     } catch (err: any) {
         onError(err.message);
     }

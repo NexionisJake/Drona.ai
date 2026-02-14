@@ -27,6 +27,7 @@ class AnalyzeErrorRequest(BaseModel):
 
 class MentorChatRequest(BaseModel):
     selected_code: str
+    full_file: Optional[str] = None
     user_query: str
     context_summary: str
     history: Optional[str] = None # For chat history if needed

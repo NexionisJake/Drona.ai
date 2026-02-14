@@ -7,7 +7,7 @@ interface CodeEditorProps {
     onEditorMount: OnMount;
     onContentChange?: OnChange;
     onErrorDetected?: (error: string, lineContent: string) => void;
-    onMentorTrigger?: (code: string) => void;
+    onMentorTrigger?: (selectedCode: string, fullFile: string) => void;
 }
 
 const DEFAULT_CODE = `from fastapi import FastAPI
@@ -28,10 +28,12 @@ app.add_middleware(
 def health_check():
     return {"status": "Anti-Copilot API Running"}`;
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked, onEditorMount, onContentChange, onErrorDetected, onMentorTrigger }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMount, onContentChange, onErrorDetected, onMentorTrigger }) => {
     const editorRef = React.useRef<any>(null);
-    const debounceRef = React.useRef<any>(null);
     const monacoRef = React.useRef<any>(null);
+    // Typing-aware debounce: tracks last keystroke time
+    const typingTimerRef = React.useRef<any>(null);
+    const errorCheckTimerRef = React.useRef<any>(null);
 
     const validateCode = (value: string, model: any) => {
         if (!monacoRef.current) return;
@@ -58,7 +60,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked, onEditorMount, onCont
                     startColumn: line.length + 1,
                     endLineNumber: lineNumber,
                     endColumn: line.length + 2,
-                    message: "SyntaxError: Expeced ':'",
+                    message: "SyntaxError: Expected ':'",
                 });
             }
         });
@@ -71,39 +73,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked, onEditorMount, onCont
         monacoRef.current = monaco;
         onEditorMount(editor, monaco);
 
-        // 1. Error Detection (Shoulder Tap)
-        const updateMarkers = () => {
-            if (!onErrorDetected) return;
-            const model = editor.getModel();
-            if (!model) return;
+        // Error detection is handled in onChange via typing-aware debounce.
+        // We intentionally do NOT listen to onDidChangeMarkers here to avoid
+        // double-firing. The onChange handler checks markers after 2.5s of inactivity.
 
-            const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-            const errors = markers.filter(m => m.severity === monaco.MarkerSeverity.Error);
-
-            if (errors.length > 0) {
-                const firstError = errors[0];
-                const lineContent = model.getLineContent(firstError.startLineNumber);
-
-                // Debounce 2s
-                if (debounceRef.current) clearTimeout(debounceRef.current);
-                debounceRef.current = setTimeout(() => {
-                    onErrorDetected(firstError.message, lineContent);
-                }, 2000);
-            }
-        };
-
-        // Listen for marker changes
-        monaco.editor.onDidChangeMarkers(() => {
-            updateMarkers();
-        });
-
-        // 2. Ctrl+M Manual Trigger
+        // 2. Ctrl+M Manual Trigger — sends both selection AND full file
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
             if (!onMentorTrigger) return;
             const selection = editor.getSelection();
+            const fullFile = editor.getModel()?.getValue() || "";
             if (selection) {
                 const selectedText = editor.getModel()?.getValueInRange(selection) || "";
-                onMentorTrigger(selectedText);
+                onMentorTrigger(selectedText, fullFile);
+            } else {
+                onMentorTrigger("", fullFile);
             }
         });
 
@@ -116,6 +99,25 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked, onEditorMount, onCont
         if (editorRef.current && value) {
             validateCode(value, editorRef.current.getModel());
         }
+
+        // Reset typing timer on every keystroke — this prevents error check
+        // from firing while the user is still actively typing.
+        if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+        if (errorCheckTimerRef.current) clearTimeout(errorCheckTimerRef.current);
+        typingTimerRef.current = setTimeout(() => {
+            // User stopped typing for 2.5s — now check for errors
+            const model = editorRef.current?.getModel();
+            if (!model || !monacoRef.current || !onErrorDetected) return;
+
+            const markers = monacoRef.current.editor.getModelMarkers({ resource: model.uri });
+            const errors = markers.filter((m: any) => m.severity === monacoRef.current.MarkerSeverity.Error);
+
+            if (errors.length > 0) {
+                const firstError = errors[0];
+                const lineContent = model.getLineContent(firstError.startLineNumber);
+                onErrorDetected(firstError.message, lineContent);
+            }
+        }, 2500);
     };
 
     return (
@@ -129,7 +131,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked, onEditorMount, onCont
                     minimap: { enabled: false },
                     fontSize: 14,
                     wordWrap: 'on',
-                    readOnly: isLocked,
                     automaticLayout: true,
                     scrollBeyondLastLine: false,
                     padding: { top: 16, bottom: 16 },

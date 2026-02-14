@@ -152,14 +152,14 @@ async def mentor_chat(request: MentorChatRequest):
     if not claude_service.client:
         # Fallback to mock
         async def mock_gen():
-            async for chunk in mock_service.mock_stream_mentor_chat(request.selected_code, request.user_query, request.context_summary):
+            async for chunk in mock_service.mock_stream_mentor_chat(request.selected_code, request.user_query, request.context_summary, request.full_file or ""):
                 yield {"data": chunk}
             yield {"data": "[DONE]"}
         return EventSourceResponse(mock_gen())
 
     async def event_generator():
         try:
-            iterator = claude_service.stream_mentor_chat(request.selected_code, request.user_query, request.context_summary)
+            iterator = claude_service.stream_mentor_chat(request.selected_code, request.user_query, request.context_summary, request.full_file or "")
             async for chunk in iterator:
                 yield {"data": chunk}
             yield {"data": "[DONE]"}
