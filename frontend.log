@@ -18,3 +18,6 @@ Re-optimizing dependencies because lockfile has changed
 1:24:53 PM [vite] ✨ optimized dependencies changed. reloading
 1:27:10 PM [vite] hmr update /src/App.tsx, /src/index.css
 1:27:25 PM [vite] hmr update /src/index.css, /src/App.tsx
+1:28:41 PM [vite] hmr update /src/App.tsx, /src/index.css
+1:29:32 PM [vite] hmr update /src/App.tsx, /src/index.css
+1:29:34 PM [vite] hmr update /src/App.tsx, /src/index.css
