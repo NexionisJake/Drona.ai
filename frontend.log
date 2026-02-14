@@ -1,0 +1,15 @@
+
+> frontend@0.0.0 dev
+> vite
+
+Re-optimizing dependencies because lockfile has changed
+
+  VITE v5.4.21  ready in 250 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+1:22:33 PM [vite] hmr update /src/App.tsx, /src/index.css
+1:22:39 PM [vite] hmr update /src/components/MentorSidebar.tsx, /src/index.css
+1:22:40 PM [vite] ✨ new dependencies optimized: lucide-react
+1:22:40 PM [vite] ✨ optimized dependencies changed. reloading
+1:23:04 PM [vite] hmr update /src/components/Navbar.tsx, /src/index.css

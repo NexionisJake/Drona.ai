@@ -118,7 +118,7 @@ function App() {
       <Navbar score={score} />
 
       <div className="flex-1 flex pt-16 h-full relative">
-        <div className="w-[70%] relative flex-1 bg-[#1e1e1e]">
+        <div className="w-[70%] relative flex-1 bg-[#1e1e1e] border-r border-[#30363d] shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-10">
           <CodeEditor
             isLocked={isLocked}
             onEditorMount={handleEditorMount}
@@ -130,7 +130,7 @@ function App() {
           />
         </div>
 
-        <div className="w-[30%] h-full border-l border-gray-800">
+        <div className="w-[30%] h-full bg-[#0d1117]">
           <MentorSidebar
             quizState={isLocked ? 'active' : 'idle'}
             streamedText={streamedText}
