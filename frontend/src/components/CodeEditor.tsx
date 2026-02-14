@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import Editor, { OnMount, OnChange } from '@monaco-editor/react';
+import Editor, { type OnMount, type OnChange } from '@monaco-editor/react';
 
 interface CodeEditorProps {
     isLocked: boolean;
