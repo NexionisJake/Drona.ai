@@ -1,0 +1,163 @@
+# 🚀 Project: The "Anti-Copilot" (Build India 2026)
+
+**Date:** February 15, 2026
+**Event:** Build India Hackathon (7-Hour Sprint)
+**Theme:** India-First AI (Employability & Skill Building)
+
+## 1. Executive Summary
+
+**The Anti-Copilot** is a Socratic Code Editor designed to combat the "Vibe Coding" crisis where developers paste code without understanding it. Instead of auto-completing code, this environment **locks** when it detects blind copy-pasting and forces the user to answer architectural questions before they can proceed. It gamifies "understanding" over "speed."
+
+---
+
+## 2. Technical Stack (The "Speed Run" Setup)
+
+* **Frontend:** React + TypeScript + Vite (`npm create vite@latest`)
+* **Styling:** Tailwind CSS (for rapid UI & Blur effects)
+* **Editor Engine:** `@monaco-editor/react` (Microsoft’s VS Code core)
+* **Backend:** Python + FastAPI (Async, Lightweight)
+* **AI Engine:** Anthropic Claude 3.5 Sonnet (Reasoning & Code Analysis)
+* **State/Persistence:** Browser `localStorage` (Zero-config)
+* **Communication:** HTTP Streaming (Server-Sent Events) – *No WebSockets*
+
+---
+
+## 3. Core Features & Logic
+
+### A. The "Smart Paste" Trap
+
+* **Trigger:** Hook into Monaco’s `editor.onDidPaste` event.
+* **Threshold:** > **25 Lines** of code in a single paste action.
+* **The Lock Action:**
+1. **Freeze:** Editor set to `readOnly: true`.
+2. **Visual:** Apply a CSS `backdrop-filter: blur(4px)` overlay with a "Knowledge Check" modal.
+3. **Penalty:** Deduct **-0.2 points** per line pasted from the Builder Score immediately.
+
+
+
+### B. The Socratic Quiz (AI Logic)
+
+* **System Prompt:** Claude is strictly forbidden from outputting code blocks. It acts as a Senior Engineer.
+* **Flow:**
+1. Frontend sends the pasted code chunk to FastAPI.
+2. FastAPI streams back **Question 1** (e.g., about security, logic, or memory).
+3. User answers in the sidebar.
+4. Claude evaluates. If unsatisfied, it asks **Question 2**.
+5. **Success Condition:** If Claude is satisfied with the explanation, the editor unlocks.
+
+
+
+### C. The "Escape Hatch" (Undo Mastery)
+
+* **Logic:** Track the Monaco `alternativeVersionId` *before* the paste event.
+* **Event:** Listen for `editor.onDidChangeModelContent`.
+* **Action:** If the user hits `Ctrl+Z` (Undo) and the `versionId` reverts to the pre-paste state:
+1. **Unlock:** Remove `readOnly` status immediately.
+2. **Dismiss:** Close the Quiz modal and abort the AI stream.
+3. **Refund:** Revert the negative score penalty.
+
+
+
+### D. The Builder Score (Gamification)
+
+* **Display:** Top-Center Navigation Bar.
+* **Logic:**
+* **Manual Typing:** +0.2 points per newline (debounced to prevent spamming).
+* **Pasting:** -0.2 points per line.
+* **Visuals:** Green text for positive score, Red for negative.
+
+
+
+---
+
+## 4. UI/UX Specifications
+
+### Layout (Split Screen)
+
+* **Left Pane (70%):** The Code Editor.
+* Clean, dark-mode Monaco instance.
+* Language set to `python` (for the demo).
+
+
+* **Right Pane (30%):** The "Mentor" Sidebar.
+* **State A (Idle):** "I am watching your code structure."
+* **State B (Active Quiz):** Chat interface with streaming text from Claude.
+
+
+
+### The "Lock" Modal
+
+* **Appearance:** A centered, glassmorphism card over the blurred editor.
+* **Text:** "⚠️ **Vibe Coding Detected.** Explain this logic to proceed."
+* **Controls:** No "Close" button. The only way out is to **Answer** or **Undo**.
+
+---
+
+## 5. API Interface (FastAPI)
+
+### Endpoint 1: `/analyze_paste` (Streaming)
+
+* **Method:** `POST`
+* **Input:** `{ code_snippet: string, context_summary: string }`
+* **Output:** Streaming text (SSE). Claude analyzes the snippet and streams the first question.
+
+### Endpoint 2: `/validate_answer`
+
+* **Method:** `POST`
+* **Input:** `{ question: string, user_answer: string, code_snippet: string }`
+* **Output:** JSON `{ status: "pass" | "fail", feedback: string, next_question: string | null }`
+
+---
+
+## 6. Implementation Roadmap (7-Hour Sprint)
+
+### Hour 1: Setup & Hello World
+
+* Initialize Vite (React+TS) & FastAPI.
+* Get Monaco Editor rendering on the screen.
+* Setup Tailwind.
+
+### Hour 2: The "Trap" Mechanism
+
+* Implement `onDidPaste` listener.
+* Implement the Line Count logic (>25 lines).
+* Build the `readOnly` toggle and the Blur Overlay CSS.
+
+### Hour 3: The "Undo" Logic
+
+* Implement `getAlternativeVersionId` tracking.
+* Ensure `Ctrl+Z` cleanly unlocks the editor.
+
+### Hour 4: Backend Integration
+
+* Write the FastAPI endpoints.
+* Connect the Claude 3.5 Sonnet API.
+* **Crucial:** Test the StreamingResponse (it must feel fast).
+
+### Hour 5: The Chat UI
+
+* Build the Right Sidebar.
+* Connect the frontend chat input to the FastAPI endpoints.
+* Handle the "Pass/Fail" state updates from the backend.
+
+### Hour 6: Scoring & Polish
+
+* Implement the Logic for `+0.2` / `-0.2`.
+* Add the visual Score Component in the Navbar.
+* **Polish:** Add a simple "Loading..." spinner while Claude thinks.
+
+### Hour 7: The "Demo" Rehearsal
+
+* **Script:** Write the `database.py` snippet you will paste.
+* **Rehearse:** Paste -> Lock -> Answer -> Unlock.
+* **Backup:** Have a video recording of the workflow just in case live internet fails.
+
+---
+
+## 7. Hackathon Survival Rules (The "Don'ts")
+
+1. **DO NOT** try to implement multi-file support. Hardcode everything to a single `main.py` context.
+2. **DO NOT** use a real database. Use `localStorage` for everything.
+3. **DO NOT** build a Login/Signup page. Hardcode a user session.
+4. **DO NOT** fight with CSS for hours. Use standard Tailwind utility classes (`flex`, `grid`, `blur-md`, `absolute`).
+
