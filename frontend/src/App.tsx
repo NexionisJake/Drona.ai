@@ -7,6 +7,7 @@ import LockOverlay from './components/LockOverlay';
 import { Toaster, toast } from 'react-hot-toast';
 import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
+import { analyzePaste, validateAnswer } from './services/api';
 
 function App() {
   const [score, setScore] = useState(0);
@@ -14,30 +15,96 @@ function App() {
   const [linesPasted, setLinesPasted] = useState(0);
   const [scorePenalty, setScorePenalty] = useState(0);
   const [pastedCode, setPastedCode] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [prePasteVersionId, setPrePasteVersionId] = useState<number>(0);
 
+  // Quiz State
+  const [questionNumber, setQuestionNumber] = useState(1);
+  const [streamedText, setStreamedText] = useState("");
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [q1Text, setQ1Text] = useState("");
+  const [a1Text, setA1Text] = useState("");
+
   const editorRef = useRef<any>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleEditorMount: OnMount = (editor) => {
     editorRef.current = editor;
   };
 
+  const startQuiz = async (code: string) => {
+    setStreamedText("");
+    setQuestionNumber(1);
+    setIsEvaluating(false);
+
+    abortControllerRef.current = new AbortController();
+
+    // Get full content for context
+    const context = editorRef.current?.getModel()?.getValue() || "";
+
+    await analyzePaste({
+      codeSnippet: code,
+      contextSummary: context,
+      onChunk: (text) => setStreamedText(prev => prev + text),
+      onDone: () => console.log("Stream complete"),
+      onError: (err) => toast.error(`Mentor Error: ${err}`),
+      abortSignal: abortControllerRef.current ? abortControllerRef.current.signal : undefined
+    });
+  };
+
   const handlePasteDetected = ({ pastedText, lineCount, prePasteVersionId }: { pastedText: string, lineCount: number, prePasteVersionId: number }) => {
-    if (isLocked) return; // Already locked
+    if (isLocked) return;
 
     setIsLocked(true);
     setPastedCode(pastedText);
     setLinesPasted(lineCount);
     setPrePasteVersionId(prePasteVersionId);
 
-    // Calculate penalty: -0.2 per line
     const penalty = lineCount * -0.2;
     setScorePenalty(penalty);
-    setScore(prev => prev + penalty); // Add negative value
+    setScore(prev => prev + penalty);
 
     toast.error(`Vibe Coding Detected! ${lineCount} lines pasted.`);
 
-    // TODO: Trigger backend analysis here (Phase 4)
+    // Trigger Analysis
+    startQuiz(pastedText);
+  };
+
+  const handleAnswerSubmit = async (answer: string) => {
+    setIsEvaluating(true);
+
+    try {
+      const response = await validateAnswer({
+        question: questionNumber === 1 ? streamedText : streamedText,
+        userAnswer: answer,
+        codeSnippet: pastedCode,
+        questionNumber: questionNumber,
+        question1: questionNumber === 2 ? q1Text : undefined,
+        answer1: questionNumber === 2 ? a1Text : undefined
+      });
+
+      if (response.status === "next_question" && response.next_question) {
+        // Move to Q2
+        setQ1Text(streamedText);
+        setA1Text(answer);
+        setQuestionNumber(2);
+        setStreamedText(response.next_question);
+        toast.success(response.feedback);
+      } else if (response.status === "pass") {
+        // Unlock!
+        toast.success("Unlocked! Penalty refunded.");
+        setIsLocked(false);
+        setScore(prev => prev - scorePenalty);
+      } else {
+        // Fail
+        toast.error("Explanation failed. Try again.");
+      }
+
+    } catch (err: any) {
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   usePasteDetection({
@@ -64,7 +131,13 @@ function App() {
         </div>
 
         <div className="w-[30%] h-full border-l border-gray-800">
-          <MentorSidebar quizState={isLocked ? 'active' : 'idle'} />
+          <MentorSidebar
+            quizState={isLocked ? 'active' : 'idle'}
+            streamedText={streamedText}
+            isEvaluating={isEvaluating}
+            questionNumber={questionNumber}
+            onAnswerSubmit={handleAnswerSubmit}
+          />
         </div>
       </div>
 
