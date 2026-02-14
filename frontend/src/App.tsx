@@ -7,6 +7,7 @@ import LockOverlay from './components/LockOverlay';
 import { Toaster, toast } from 'react-hot-toast';
 import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
+import { useUndoEscape } from './hooks/useUndoEscape';
 import { analyzePaste, validateAnswer } from './services/api';
 
 function App() {
@@ -15,7 +16,6 @@ function App() {
   const [linesPasted, setLinesPasted] = useState(0);
   const [scorePenalty, setScorePenalty] = useState(0);
   const [pastedCode, setPastedCode] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [prePasteVersionId, setPrePasteVersionId] = useState<number>(0);
 
   // Quiz State
@@ -47,7 +47,9 @@ function App() {
       contextSummary: context,
       onChunk: (text) => setStreamedText(prev => prev + text),
       onDone: () => console.log("Stream complete"),
-      onError: (err) => toast.error(`Mentor Error: ${err}`),
+      onError: (err) => {
+        if (err !== "Timeout") toast.error(`Mentor Error: ${err}`);
+      },
       abortSignal: abortControllerRef.current ? abortControllerRef.current.signal : undefined
     });
   };
@@ -107,10 +109,33 @@ function App() {
     }
   };
 
+  const handleUndoComplete = () => {
+    setIsLocked(false);
+    setScore(prev => prev - scorePenalty); // Refund penalty
+    setQuestionNumber(1);
+    setStreamedText("");
+    setPastedCode("");
+    setLinesPasted(0);
+
+    // Abort in-flight quiz stream
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    toast.success("Paste undone. Score restored.");
+  };
+
   usePasteDetection({
     editorInstance: editorRef.current,
     onPasteDetected: handlePasteDetected,
     isLocked
+  });
+
+  useUndoEscape({
+    editorInstance: editorRef.current,
+    isLocked,
+    prePasteVersionId,
+    onUndoComplete: handleUndoComplete
   });
 
   return (

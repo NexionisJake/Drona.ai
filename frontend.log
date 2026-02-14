@@ -13,3 +13,6 @@ Re-optimizing dependencies because lockfile has changed
 1:22:40 PM [vite] ✨ new dependencies optimized: lucide-react
 1:22:40 PM [vite] ✨ optimized dependencies changed. reloading
 1:23:04 PM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+1:24:52 PM [vite] hmr update /src/App.tsx, /src/index.css
+1:24:53 PM [vite] ✨ new dependencies optimized: monaco-editor
+1:24:53 PM [vite] ✨ optimized dependencies changed. reloading
