@@ -1,6 +1,77 @@
 INFO:     Will watch for changes in these directories: ['/home/nexion/Desktop/anti ai/backend']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [39189] using WatchFiles
-INFO:     Started server process [39201]
+INFO:     Started reloader process [65093] using WatchFiles
+INFO:     Started server process [65105]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     127.0.0.1:47328 - "OPTIONS /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47338 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43216 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57122 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59722 - "POST /mentor_chat HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'services/claude_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [65105]
+INFO:     Started server process [69031]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59260 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43524 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43524 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33884 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33884 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44016 - "OPTIONS /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44022 - "POST /mentor_chat HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'models/schemas.py', 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69031]
+INFO:     Started server process [72858]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72858]
+INFO:     Started server process [72952]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:44428 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55680 - "POST /api/run HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:44182 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52902 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36924 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51598 - "OPTIONS /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51598 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51598 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51598 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51598 - "POST /api/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41234 - "POST /api/run HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'services/claude_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72952]
+INFO:     Started server process [75326]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:48862 - "OPTIONS /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48864 - "POST /mentor_chat HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'services/claude_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [75326]
+INFO:     Started server process [75699]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:34422 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53958 - "OPTIONS /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53968 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44812 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38854 - "POST /mentor_chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50456 - "POST /mentor_chat HTTP/1.1" 200 OK

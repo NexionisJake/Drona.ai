@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { TextShimmer } from './TextShimmer';
+import { preprocessMarkdown } from '../utils/markdownUtils';
 
 export interface QuizMessage {
     role: 'question' | 'answer';
@@ -58,8 +60,8 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
                                     Your Answer
                                 </h4>
                             )}
-                            <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-white/10 prose-strong:text-white prose-ul:my-2 prose-li:marker:text-blue-400">
+                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
                             </div>
                         </div>
                     </div>
@@ -73,8 +75,8 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
                             <h4 className="text-xs uppercase tracking-wide text-blue-400 font-bold mb-1">
                                 Question {questionNumber}
                             </h4>
-                            <div className="prose prose-invert prose-sm max-w-none leading-relaxed">
-                                <ReactMarkdown>{streamedText}</ReactMarkdown>
+                            <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-white/10 prose-strong:text-white prose-ul:my-2 prose-li:marker:text-blue-400">
+                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>{preprocessMarkdown(streamedText)}</ReactMarkdown>
                             </div>
                         </div>
                     </div>

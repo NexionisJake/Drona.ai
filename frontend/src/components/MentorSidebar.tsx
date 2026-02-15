@@ -2,8 +2,7 @@ import React from 'react';
 import QuizChat, { type QuizMessage } from './QuizChat';
 import MentorChat, { type Message } from './MentorChat';
 import { Brain, Sparkles } from 'lucide-react';
-import LoadingRadar from './LoadingRadar';
-import { TextShimmer } from './TextShimmer';
+import ScannerCardStream from './ScannerCardStream';
 
 interface MentorSidebarProps {
     quizState: 'idle' | 'active' | 'chat';
@@ -47,17 +46,13 @@ const MentorSidebar: React.FC<MentorSidebarProps> = ({
             </div>
 
             {quizState === 'idle' ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-[#0d1117]">
-                    <div className="flex flex-col items-center p-8 text-center text-gray-500">
-                        <div className="scale-75 mb-4">
-                            <LoadingRadar />
-                        </div>
-                        <TextShimmer className="italic text-sm">Scanning for vibe coding...</TextShimmer>
-                        <p className="text-xs mt-2 text-gray-600">Paste detection active</p>
+                <div className="relative flex-1 w-full overflow-hidden bg-[#0d1117]">
+                    <div className="absolute top-3 left-0 right-0 text-center z-40 pointer-events-none">
+                        <p className="text-[10px] text-gray-500 font-mono">
+                            Ctrl+M to ask Mentor
+                        </p>
                     </div>
-                    <p className="text-xs text-gray-600 mt-2">
-                        Ctrl+M to ask Mentor
-                    </p>
+                    <ScannerCardStream />
                 </div>
             ) : quizState === 'active' ? (
                 <div className="flex-1 overflow-hidden">

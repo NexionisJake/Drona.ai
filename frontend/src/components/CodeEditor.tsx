@@ -11,6 +11,8 @@ interface CodeEditorProps {
     onContentChange?: OnChange;
     onErrorDetected?: (error: string, lineContent: string) => void;
     onMentorTrigger?: (selectedCode: string, fullFile: string) => void;
+    onCursorChange?: (line: number, col: number) => void;
+    onMarkersChange?: (errors: number, warnings: number) => void;
 }
 
 const DEFAULT_CODE = `from fastapi import FastAPI
@@ -31,9 +33,10 @@ app.add_middleware(
 def health_check():
     return {"status": "Anti-Copilot API Running"}`;
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMount, onContentChange, onErrorDetected, onMentorTrigger }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMount, onContentChange, onErrorDetected, onMentorTrigger, onCursorChange, onMarkersChange }) => {
     const editorRef = React.useRef<any>(null);
     const monacoRef = React.useRef<any>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
     const [isSoundEnabled, setIsSoundEnabled] = React.useState(true);
 
     // Flow State Hook
@@ -85,28 +88,89 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
         // We intentionally do NOT listen to onDidChangeMarkers here to avoid
         // double-firing. The onChange handler checks markers after 2.5s of inactivity.
 
-        // 2. Ctrl+M Manual Trigger — sends both selection AND full file
+        // 2. Ctrl+M Manual Trigger — sends both selection AND full file (Context Sliced)
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
             if (!onMentorTrigger) return;
             const selection = editor.getSelection();
-            const fullFile = editor.getModel()?.getValue() || "";
-            if (selection) {
-                const selectedText = editor.getModel()?.getValueInRange(selection) || "";
-                onMentorTrigger(selectedText, fullFile);
+            const model = editor.getModel();
+            if (!model) return;
+
+            // Context Slicing: Always get 50 lines above and below cursor for context
+            let slicedContext = "";
+            const position = editor.getPosition();
+
+            if (position) {
+                const startLine = Math.max(1, position.lineNumber - 50);
+                const endLine = Math.min(model.getLineCount(), position.lineNumber + 50);
+                const range = new monaco.Range(startLine, 1, endLine, model.getLineMaxColumn(endLine));
+                slicedContext = model.getValueInRange(range);
+                console.log(`Context Sliced: Lines ${startLine}-${endLine}`);
             } else {
-                onMentorTrigger("", fullFile);
+                slicedContext = model.getValue(); // Fallback
+            }
+
+            if (selection && !selection.isEmpty()) {
+                const selectedText = model.getValueInRange(selection);
+                onMentorTrigger(selectedText, slicedContext);
+            } else {
+                // No selection, focus on the sliced context
+                onMentorTrigger("", slicedContext);
             }
         });
 
         // Initial validation
         validateCode(editor.getValue(), editor.getModel());
 
-        // 3. Audio & Flow Integration
-        editor.onKeyDown(() => {
+        // 3. Audio & Flow Integration & Undo Trap
+        editor.onKeyDown((e: any) => {
+            // Undo Trap: If locked, block everything except Ctrl+Z
+            if (_isLocked) {
+                // Allow Undo (Ctrl+Z or Cmd+Z)
+                if ((e.ctrlKey || e.metaKey) && e.keyCode === monaco.KeyCode.KeyZ) {
+                    // Let it pass, or trigger undo manually if readOnly blocks it.
+                    // If readOnly is true, we might need to set it false temporarily, but here we assume we are NOT using readOnly prop.
+                    // We are intercepting keys instead.
+                    return;
+                }
+
+                // Block everything else
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
             if (isSoundEnabled) soundManager.playKeyClick();
             registerKeystroke();
         });
+
+        // 4. Cursor Position Tracking
+        if (onCursorChange) {
+            editor.onDidChangeCursorPosition((e: any) => {
+                onCursorChange(e.position.lineNumber, e.position.column);
+            });
+        }
+
+        // 5. Marker Tracking (Errors/Warnings)
+        if (onMarkersChange) {
+            monaco.editor.onDidChangeMarkers(() => {
+                const model = editor.getModel();
+                if (!model) return;
+                const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+                const errors = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Error).length;
+                const warnings = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Warning).length;
+                onMarkersChange(errors, warnings);
+            });
+        }
     };
+
+    // Update CSS variables for Flow Mode efficiently
+    React.useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.style.setProperty('--flow-intensity', flowState.intensity.toString());
+            containerRef.current.style.setProperty('--flow-streak', flowState.streak.toString());
+        }
+    }, [flowState.intensity, flowState.streak]);
+
 
     const handleChange: OnChange = (value, ev) => {
         if (onContentChange) onContentChange(value, ev);
@@ -135,7 +199,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
     };
 
     return (
-        <div className="h-full w-full relative group">
+        <div ref={containerRef} className="h-full w-full relative group">
             <Editor
                 height="100%"
                 defaultLanguage="python"
@@ -158,10 +222,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
             />
 
             {/* Flow Mode Overlay */}
-            <div className={`pointer-events-none absolute inset-0 z-10 border-2 transition-all duration-300 ${flowState.intensity > 0.8 ? 'border-purple-500/50 shadow-[inset_0_0_100px_rgba(168,85,247,0.2)]' :
-                flowState.intensity > 0.4 ? 'border-blue-500/30 shadow-[inset_0_0_50px_rgba(59,130,246,0.1)]' :
-                    'border-transparent'
-                }`} />
+            {/* Flow Mode Overlay using CSS variables */}
+            <div
+                className="pointer-events-none absolute inset-0 z-10 border-2 transition-all duration-300"
+                style={{
+                    borderColor: flowState.intensity > 0.8 ? 'rgba(168,85,247,0.5)' : flowState.intensity > 0.4 ? 'rgba(59,130,246,0.3)' : 'transparent',
+                    boxShadow: flowState.intensity > 0.8 ? 'inset 0 0 100px rgba(168,85,247,0.2)' : flowState.intensity > 0.4 ? 'inset 0 0 50px rgba(59,130,246,0.1)' : 'none'
+                }}
+            />
 
             {/* Combo Counter */}
             <div className={`absolute top-4 right-6 z-20 transition-opacity duration-500 ${flowState.streak > 5 ? 'opacity-100' : 'opacity-0'}`}>

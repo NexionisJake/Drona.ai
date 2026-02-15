@@ -32,3 +32,6 @@ class MentorChatRequest(BaseModel):
     context_summary: str
     history: Optional[str] = None # For chat history if needed
 
+class CodeExecutionRequest(BaseModel):
+    code: str
+

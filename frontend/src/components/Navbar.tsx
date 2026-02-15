@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity } from 'lucide-react';
+import { Activity, Play } from 'lucide-react';
 import { LayoutGroup, motion } from 'motion/react';
 import { TextRotate } from './ui/text-rotate';
 import GradientText from './ui/GradientText';
@@ -7,9 +7,10 @@ import { Button as MovingBorderButton } from "./ui/moving-border";
 
 interface NavbarProps {
     score: number;
+    onRunCode: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ score }) => {
+const Navbar: React.FC<NavbarProps> = ({ score, onRunCode }) => {
     const [wordIndex, setWordIndex] = React.useState(0);
 
     const words = [
@@ -49,19 +50,30 @@ const Navbar: React.FC<NavbarProps> = ({ score }) => {
                 </LayoutGroup>
             </div>
 
-            {/* Center — DRONA.AI logo + GradientText title */}
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5">
-                <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-                    <Activity className="w-4.5 h-4.5 text-blue-400" />
+            {/* Center — DRONA.AI logo + GradientText title + Run Button */}
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
+                <div className="flex items-center gap-2.5">
+                    <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                        <Activity className="w-4.5 h-4.5 text-blue-400" />
+                    </div>
+                    <GradientText
+                        colors={["#5227FF", "#FF9FFC", "#B19EEF", "#5227FF"]}
+                        animationSpeed={8}
+                        showBorder={false}
+                        className="text-xl font-extrabold tracking-tight"
+                    >
+                        DRONA.AI
+                    </GradientText>
                 </div>
-                <GradientText
-                    colors={["#5227FF", "#FF9FFC", "#B19EEF", "#5227FF"]}
-                    animationSpeed={8}
-                    showBorder={false}
-                    className="text-xl font-extrabold tracking-tight"
+
+                {/* Run Code Button */}
+                <button
+                    onClick={onRunCode}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/50 rounded-md transition-all duration-200 text-sm font-medium group"
                 >
-                    DRONA.AI
-                </GradientText>
+                    <Play className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                    <span>Run Code</span>
+                </button>
             </div>
 
             {/* Right — Score Badge */}

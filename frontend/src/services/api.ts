@@ -58,14 +58,21 @@ function processSSEEvents(
 ): boolean {
     const lines = eventStr.split("\n");
     for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("data: ")) {
-            const data = trimmed.replace("data: ", "");
+        if (line.startsWith("data: ")) {
+            const data = line.slice(6);
             if (data === "[DONE]") {
                 onDone();
                 return true;
             }
-            onChunk(data);
+            // Safety: strip [DONE] if it leaked into the end of a data chunk
+            const cleaned = data.replace(/\[DONE\]$/g, '').trimEnd();
+            if (cleaned) {
+                onChunk(cleaned);
+            }
+            if (data.endsWith("[DONE]")) {
+                onDone();
+                return true;
+            }
         }
     }
     return false;
@@ -260,6 +267,31 @@ export async function mentorChat({
         await readSSEStream(reader, onChunk, onDone);
     } catch (err: any) {
         onError(err.message);
+    }
+}
+
+export interface ExecuteCodeResponse {
+    stdout: string;
+    stderr: string;
+    status: "success" | "error" | "timeout";
+}
+
+export async function executeCode(code: string): Promise<ExecuteCodeResponse> {
+    try {
+        const response = await fetch(`${API_BASE}/api/run`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code })
+        });
+
+        if (!response.ok) throw new Error("Code execution failed");
+        return response.json();
+    } catch (err: any) {
+        return {
+            stdout: "",
+            stderr: `Execution error: ${err.message}`,
+            status: "error"
+        };
     }
 }
 

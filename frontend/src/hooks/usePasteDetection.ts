@@ -12,6 +12,7 @@ export const usePasteDetection = ({ editorInstance, onPasteDetected, isLocked }:
     // Use current and previous to track version ID history
     const prevVersionId = useRef<number>(0);
     const currVersionId = useRef<number>(0);
+    const internalClipboardRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!editorInstance) return;
@@ -32,6 +33,25 @@ export const usePasteDetection = ({ editorInstance, onPasteDetected, isLocked }:
             currVersionId.current = model.getAlternativeVersionId();
         });
 
+        // Track internal copies
+        // Note: onDidCopy is not directly exposed on IStandaloneCodeEditor in strict TS without casting or using specific service,
+        // but typically we can listen to the DOM or use internal events.
+        // However, Monaco has specific command events.
+        // Easier approach: Use the editor's onKeyDown or onDidCompositionEnd?
+        // Actually, let's try to intercept the copy via the model or editor.
+        // Standard way:
+        const domNode = editorInstance.getDomNode();
+        const handleCopy = () => {
+            const selection = editorInstance.getSelection();
+            if (selection && !selection.isEmpty()) {
+                internalClipboardRef.current = model.getValueInRange(selection);
+            }
+        };
+
+        // Listen to copy event on the textarea/container
+        domNode?.addEventListener('copy', handleCopy);
+        domNode?.addEventListener('cut', handleCopy);
+
         const pasteDisposable = editorInstance.onDidPaste((e) => {
             const model = editorInstance.getModel();
             if (!model) return;
@@ -43,6 +63,12 @@ export const usePasteDetection = ({ editorInstance, onPasteDetected, isLocked }:
 
             // Threshold check: >= 25 lines
             if (lineCount >= 25) {
+                // Check internal clipboard
+                if (internalClipboardRef.current === pastedText) {
+                    console.log("Internal paste detected - Allowed");
+                    return;
+                }
+
                 // The paste just happened, so currVersionId is the post-paste ID.
                 // prevVersionId contains the ID before this paste (from the concurrent/prior change event logic).
                 onPasteDetected({
@@ -56,6 +82,8 @@ export const usePasteDetection = ({ editorInstance, onPasteDetected, isLocked }:
         return () => {
             changeDisposable.dispose();
             pasteDisposable.dispose();
+            domNode?.removeEventListener('copy', handleCopy);
+            domNode?.removeEventListener('cut', handleCopy);
         };
     }, [editorInstance, onPasteDetected, isLocked]);
 };

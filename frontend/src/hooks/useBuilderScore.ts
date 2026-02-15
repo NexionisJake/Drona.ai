@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseBuilderScoreReturn {
     score: number;
@@ -9,10 +9,51 @@ interface UseBuilderScoreReturn {
     resetScore: () => void;
 }
 
+// Simple hash implementation for hackathon demonstration
+// In production, this would be server-side or more robust
+const SALT = "anti-copilot-secure-salt-v1";
+const simpleHash = (val: number): string => {
+    let str = val.toString() + SALT;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString();
+};
+
 export const useBuilderScore = (initialScore: number = 0): UseBuilderScoreReturn => {
-    const [score, setScore] = useState(initialScore);
+    // Load from localStorage if available
+    const [score, setScore] = useState(() => {
+        try {
+            const stored = localStorage.getItem('builderScore');
+            if (stored) {
+                const { value, hash } = JSON.parse(stored);
+                if (simpleHash(value) === hash) {
+                    return value;
+                } else {
+                    console.warn("Tampering detected! Resetting score.");
+                    return 0;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load score", e);
+        }
+        return initialScore;
+    });
+
     const previousLengthRef = useRef<number>(0);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Persist score changes
+    useEffect(() => {
+        const data = JSON.stringify({
+            value: score,
+            hash: simpleHash(score)
+        });
+        localStorage.setItem('builderScore', data);
+    }, [score]);
 
     const updateOnTyping = useCallback((newContent: string) => {
         const currentLength = newContent.length;

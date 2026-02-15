@@ -37,14 +37,20 @@ class SoundManager {
         osc.connect(gain);
         gain.connect(this.gainNode);
 
-        // Randomize pitch slightly for realism
-        const variance = Math.random() * 50 - 25;
-        osc.frequency.setValueAtTime(600 + variance, this.audioContext.currentTime);
+        // Dynamic Pitching: Randomize pitch slightly for realism (Mechanical Switch Feel)
+        // Base frequency 600Hz, variance +/- 50Hz
+        const variance = (Math.random() * 100) - 50;
+        const baseFreq = 600;
+        osc.frequency.setValueAtTime(baseFreq + variance, this.audioContext.currentTime);
+
+        // Also add a tiny bit of detune for "imperfection"
+        osc.detune.value = Math.random() * 20 - 10;
+
         osc.type = 'triangle';
 
-        // Envelope
+        // Envelope - crisp attack, short decay
         gain.gain.setValueAtTime(0, this.audioContext.currentTime);
-        gain.gain.linearRampToValueAtTime(0.8, this.audioContext.currentTime + 0.01);
+        gain.gain.linearRampToValueAtTime(0.8, this.audioContext.currentTime + 0.005); // Faster attack
         gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.08);
 
         osc.start();

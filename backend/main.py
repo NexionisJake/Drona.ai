@@ -1,12 +1,15 @@
 
 import asyncio
+import sys
+import subprocess
+import tempfile
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
 
-from models.schemas import AnalyzePasteRequest, ValidateAnswerRequest, ValidateAnswerResponse, AnalyzeErrorRequest, MentorChatRequest
+from models.schemas import AnalyzePasteRequest, ValidateAnswerRequest, ValidateAnswerResponse, AnalyzeErrorRequest, MentorChatRequest, CodeExecutionRequest
 from services import claude_service, mock_service
 
 load_dotenv()
@@ -115,9 +118,60 @@ async def validate_answer(request: ValidateAnswerRequest):
                 status="pass",
                 feedback="API Timeout. Auto-pass."
             )
-    
+
     else:
         raise HTTPException(status_code=400, detail="Invalid question number")
+
+@app.post("/api/run")
+async def run_code(request: CodeExecutionRequest):
+    """
+    Executes Python code securely in a temporary file with a 5-second timeout.
+    Returns stdout, stderr, and execution status.
+    """
+    temp_file = None
+    try:
+        # Create a temporary Python file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            temp_file.write(request.code)
+            temp_file_path = temp_file.name
+
+        # Execute the code with a 5-second timeout
+        try:
+            result = subprocess.run(
+                [sys.executable, temp_file_path],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            return {
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "status": "success" if result.returncode == 0 else "error"
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "stdout": "",
+                "stderr": "Execution timed out after 5 seconds. Your code may have an infinite loop.",
+                "status": "timeout"
+            }
+
+    except Exception as e:
+        return {
+            "stdout": "",
+            "stderr": f"Execution error: {str(e)}",
+            "status": "error"
+        }
+
+    finally:
+        # Clean up the temporary file
+        if temp_file:
+            try:
+                import os
+                os.unlink(temp_file_path)
+            except:
+                pass
 
 @app.post("/analyze_error")
 async def analyze_error(request: AnalyzeErrorRequest):

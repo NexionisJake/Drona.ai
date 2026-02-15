@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import { Send, User, Bot } from 'lucide-react';
 import { TextShimmer } from './TextShimmer';
+import { preprocessMarkdown } from '../utils/markdownUtils';
 
 export interface Message {
     role: 'user' | 'assistant';
@@ -48,12 +50,12 @@ const MentorChat: React.FC<MentorChatProps> = ({
                             {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                         </div>
 
-                        <div className={`flex-1 max-w-[85%] rounded-lg p-3 ${msg.role === 'user'
+                        <div className={`flex-1 max-w-[85%] rounded-lg p-3 overflow-hidden break-words ${msg.role === 'user'
                             ? 'bg-blue-600/20 border border-blue-500/20 text-gray-200'
                             : 'bg-[#161b22] border border-white/[0.06]'
                             }`}>
-                            <div className="prose prose-invert prose-sm max-w-none">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            <div className="prose prose-invert prose-sm max-w-none break-words [overflow-wrap:anywhere] prose-p:leading-relaxed prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-white/10 prose-strong:text-white prose-ul:my-2 prose-li:marker:text-blue-400">
+                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
                             </div>
                         </div>
                     </div>

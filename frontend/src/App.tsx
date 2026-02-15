@@ -5,13 +5,15 @@ import CodeEditor from './components/CodeEditor';
 import MentorSidebar from './components/MentorSidebar';
 import FileExplorer from './components/FileExplorer';
 import LockOverlay from './components/LockOverlay';
+import TerminalPanel from './components/ide/TerminalPanel';
 import { Toaster, toast } from 'react-hot-toast';
 import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
 import { useUndoEscape } from './hooks/useUndoEscape';
 import { useBuilderScore } from './hooks/useBuilderScore';
-import { analyzePaste, validateAnswer, analyzeError, mentorChat } from './services/api';
+import { analyzePaste, validateAnswer, analyzeError, mentorChat, executeCode } from './services/api';
 import { soundManager } from './utils/SoundManager';
+import { StatusBar } from '@/components/StatusBar';
 import type { Message } from './components/MentorChat';
 
 function App() {
@@ -34,6 +36,16 @@ function App() {
     const [chatMessages, setChatMessages] = useState<Message[]>([]);
     const [isChatStreaming, setIsChatStreaming] = useState(false);
     const [selectedContext, setSelectedContext] = useState("");
+
+    // Status Bar State
+    const [cursorStats, setCursorStats] = useState({ line: 1, col: 1 });
+    const [markerStats, setMarkerStats] = useState({ errors: 0, warnings: 0 });
+    const isMockMode = import.meta.env.VITE_USE_MOCK_API === 'true';
+
+    // Terminal State
+    const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+    const [terminalOutput, setTerminalOutput] = useState({ stdout: '', stderr: '' });
+    const [isRunningCode, setIsRunningCode] = useState(false);
 
     const editorRef = useRef<any>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -62,7 +74,10 @@ function App() {
         await analyzePaste({
             codeSnippet: code,
             contextSummary: context,
-            onChunk: (text) => setStreamedText(prev => prev + text),
+            onChunk: (text) => {
+                if (text === '[DONE]') return; // Safety: SSE sentinel filter
+                setStreamedText(prev => prev + text);
+            },
             onDone: () => console.log("Stream complete"),
             onError: (err) => {
                 if (err !== "Timeout") toast.error(`Mentor Error: ${err}`);
@@ -83,7 +98,6 @@ function App() {
         setScorePenalty(penalty);
         deductScore(penalty);
 
-        deductScore(penalty);
         soundManager.playAccessDenied();
 
         toast.error(`Vibe Coding Detected! ${lineCount} lines pasted.`);
@@ -166,6 +180,7 @@ function App() {
             lineCode: lineContent,
             contextSummary: context,
             onChunk: (text) => {
+                if (text === '[DONE]') return;
                 setChatMessages(prev => {
                     const last = prev[prev.length - 1];
                     return [...prev.slice(0, -1), { ...last, content: last.content + text }];
@@ -206,6 +221,7 @@ function App() {
             contextSummary: context,
             fullFile: context,
             onChunk: (text) => {
+                if (text === '[DONE]') return;
                 setChatMessages(prev => {
                     const last = prev[prev.length - 1];
                     const others = prev.slice(0, -1);
@@ -218,6 +234,41 @@ function App() {
                 setIsChatStreaming(false);
             }
         });
+    };
+
+    // --- Code Execution Handler ---
+
+    const handleRunCode = async () => {
+        const code = editorRef.current?.getModel()?.getValue() || "";
+
+        if (!code.trim()) {
+            toast.error("No code to execute");
+            return;
+        }
+
+        setIsRunningCode(true);
+        setIsTerminalOpen(true);
+        setTerminalOutput({ stdout: '', stderr: '' });
+
+        try {
+            const result = await executeCode(code);
+            setTerminalOutput({
+                stdout: result.stdout,
+                stderr: result.stderr
+            });
+
+            if (result.status === "success" && !result.stderr) {
+                toast.success("Code executed successfully");
+            } else if (result.status === "timeout") {
+                toast.error("Execution timed out");
+            } else if (result.stderr) {
+                toast.error("Code execution failed");
+            }
+        } catch (err: any) {
+            toast.error(`Execution error: ${err.message}`);
+        } finally {
+            setIsRunningCode(false);
+        }
     };
 
     usePasteDetection({
@@ -235,7 +286,7 @@ function App() {
 
     return (
         <div className="h-screen flex flex-col bg-[#09090b] text-white overflow-hidden font-sans">
-            <Navbar score={score} />
+            <Navbar score={score} onRunCode={handleRunCode} />
 
             <div className="flex-1 flex h-full relative min-h-0">
                 {/* Left Sidebar — File Explorer */}
@@ -251,12 +302,22 @@ function App() {
                         onContentChange={handleEditorChange}
                         onErrorDetected={handleErrorDetected}
                         onMentorTrigger={handleMentorTrigger}
+                        onCursorChange={(line, col) => setCursorStats({ line, col })}
+                        onMarkersChange={(errors, warnings) => setMarkerStats({ errors, warnings })}
                     />
                     <LockOverlay
                         isVisible={isLocked}
                         linesPasted={linesPasted}
                         scorePenalty={scorePenalty}
                     />
+                    {isTerminalOpen && (
+                        <TerminalPanel
+                            stdout={terminalOutput.stdout}
+                            stderr={terminalOutput.stderr}
+                            isRunning={isRunningCode}
+                            onClose={() => setIsTerminalOpen(false)}
+                        />
+                    )}
                 </div>
 
                 {/* Right — Mentor Chat */}
@@ -273,6 +334,16 @@ function App() {
                     />
                 </div>
             </div>
+
+
+            {/* Status Bar Footer */}
+            <StatusBar
+                line={cursorStats.line}
+                col={cursorStats.col}
+                errors={markerStats.errors}
+                warnings={markerStats.warnings}
+                isMockMode={isMockMode}
+            />
 
             <Toaster position="top-right" toastOptions={{
                 style: {
