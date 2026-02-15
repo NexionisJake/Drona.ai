@@ -36,7 +36,7 @@ export function WelcomeScreen({
               The Socratic CDE.
             </h2>
             <p className="text-neutral-300 text-base lg:text-lg leading-relaxed mb-10">
-              Friction where you need it. Flow where you want it. <br/><br/>
+              Friction where you need it to learn, and seamless flow where you want it to build. <br /><br />
               A cloud development environment that ensures you actually understand the code you paste. Earn your logic.
             </p>
 
