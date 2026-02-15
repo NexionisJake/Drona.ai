@@ -45,9 +45,9 @@ const MentorChat: React.FC<MentorChatProps> = ({
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600/80' : 'bg-transparent'
+                        <div className={`rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'w-8 h-8 bg-blue-600/80' : 'w-12 h-12 bg-transparent'
                             }`}>
-                            {msg.role === 'user' ? <User size={16} /> : <img src="/logo.png" alt="AI" className="w-6 h-6 object-contain" />}
+                            {msg.role === 'user' ? <User size={16} /> : <img src="/logo.png" alt="AI" className="w-12 h-12 object-contain" />}
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-lg p-3 overflow-hidden break-words ${msg.role === 'user'
@@ -63,8 +63,8 @@ const MentorChat: React.FC<MentorChatProps> = ({
 
                 {isStreaming && (!messages.length || messages[messages.length - 1].content === '') && (
                     <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 animate-pulse">
-                            <img src="/logo.png" alt="Thinking" className="w-6 h-6 object-contain" />
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 animate-pulse">
+                            <img src="/logo.png" alt="Thinking" className="w-12 h-12 object-contain" />
                         </div>
                         <div className="bg-[#161b22] border border-white/[0.06] rounded-lg p-3">
                             <TextShimmer className="text-sm text-purple-400">Thinking...</TextShimmer>
