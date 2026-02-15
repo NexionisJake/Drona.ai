@@ -36,7 +36,7 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-900 text-gray-200">
+        <div className="flex flex-col h-full bg-[#0d1117] text-gray-300">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {/* Previous Q&A History */}
                 {messages.map((msg, idx) => (
@@ -45,8 +45,8 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
                             {msg.role === 'question' ? '🧠' : '👤'}
                         </div>
                         <div className={`flex-1 rounded-lg p-3 border ${msg.role === 'question'
-                            ? 'bg-gray-800 border-gray-700'
-                            : 'bg-[#1f6feb]/20 border-blue-700/30'
+                            ? 'bg-[#161b22] border-white/[0.06]'
+                            : 'bg-blue-500/10 border-blue-500/20'
                             }`}>
                             {msg.role === 'question' && (
                                 <h4 className="text-xs uppercase tracking-wide text-blue-400 font-bold mb-1">
@@ -69,7 +69,7 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
                 {streamedText && (
                     <div className="flex items-start space-x-3">
                         <div className="text-2xl mt-1">🧠</div>
-                        <div className="flex-1 bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <div className="flex-1 bg-[#161b22] rounded-lg p-3 border border-white/[0.06]">
                             <h4 className="text-xs uppercase tracking-wide text-blue-400 font-bold mb-1">
                                 Question {questionNumber}
                             </h4>
@@ -91,13 +91,13 @@ const QuizChat: React.FC<QuizChatProps> = ({ messages, streamedText, isEvaluatin
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-gray-900 border-t border-gray-800">
+            <div className="p-4 bg-[#161b22] border-t border-white/[0.06]">
                 <textarea
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Explain your logic..."
-                    className="w-full bg-black/50 border border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none h-24"
+                    className="w-full bg-[#0d1117] border border-white/[0.08] rounded-lg p-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none h-24"
                     disabled={isEvaluating}
                 />
                 <div className="text-xs text-gray-600 mt-2 flex justify-between">

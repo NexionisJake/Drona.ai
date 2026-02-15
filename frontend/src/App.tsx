@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import Navbar from './components/Navbar';
 import CodeEditor from './components/CodeEditor';
 import MentorSidebar from './components/MentorSidebar';
+import FileExplorer from './components/FileExplorer';
 import LockOverlay from './components/LockOverlay';
 import { Toaster, toast } from 'react-hot-toast';
 import type { OnMount } from '@monaco-editor/react';
@@ -10,6 +11,7 @@ import { usePasteDetection } from './hooks/usePasteDetection';
 import { useUndoEscape } from './hooks/useUndoEscape';
 import { useBuilderScore } from './hooks/useBuilderScore';
 import { analyzePaste, validateAnswer, analyzeError, mentorChat } from './services/api';
+import { soundManager } from './utils/SoundManager';
 import type { Message } from './components/MentorChat';
 
 function App() {
@@ -80,6 +82,9 @@ function App() {
         const penalty = lineCount * -0.2;
         setScorePenalty(penalty);
         deductScore(penalty);
+
+        deductScore(penalty);
+        soundManager.playAccessDenied();
 
         toast.error(`Vibe Coding Detected! ${lineCount} lines pasted.`);
 
@@ -229,11 +234,17 @@ function App() {
     });
 
     return (
-        <div className="h-screen flex flex-col bg-black text-white overflow-hidden font-sans">
+        <div className="h-screen flex flex-col bg-[#09090b] text-white overflow-hidden font-sans">
             <Navbar score={score} />
 
-            <div className="flex-1 flex pt-16 h-full relative">
-                <div className="w-[70%] relative flex-1 bg-[#1e1e1e] border-r border-[#30363d] shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-10">
+            <div className="flex-1 flex h-full relative min-h-0">
+                {/* Left Sidebar — File Explorer */}
+                <div className="w-[15%] h-full min-w-[180px] shrink-0">
+                    <FileExplorer />
+                </div>
+
+                {/* Center — Monaco Editor */}
+                <div className="flex-1 relative bg-[#1e1e1e] pt-14 min-w-0">
                     <CodeEditor
                         isLocked={isLocked}
                         onEditorMount={handleEditorMount}
@@ -248,7 +259,8 @@ function App() {
                     />
                 </div>
 
-                <div className="w-[30%] h-full bg-[#0d1117]">
+                {/* Right — Mentor Chat */}
+                <div className="w-[25%] h-full min-w-[280px] shrink-0 pt-14">
                     <MentorSidebar
                         quizState={mentorMode}
                         streamedText={streamedText}

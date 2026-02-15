@@ -43,14 +43,14 @@ const MentorChat: React.FC<MentorChatProps> = ({
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-purple-600'
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600/80' : 'bg-purple-600/80'
                             }`}>
                             {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-lg p-3 ${msg.role === 'user'
-                            ? 'bg-[#1f6feb] text-white'
-                            : 'bg-[#161b22] border border-[#30363d]'
+                            ? 'bg-blue-600/20 border border-blue-500/20 text-gray-200'
+                            : 'bg-[#161b22] border border-white/[0.06]'
                             }`}>
                             <div className="prose prose-invert prose-sm max-w-none">
                                 <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -64,7 +64,7 @@ const MentorChat: React.FC<MentorChatProps> = ({
                         <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0 animate-pulse">
                             <Bot size={16} />
                         </div>
-                        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3">
+                        <div className="bg-[#161b22] border border-white/[0.06] rounded-lg p-3">
                             <TextShimmer className="text-sm text-purple-400">Thinking...</TextShimmer>
                         </div>
                     </div>
@@ -73,14 +73,14 @@ const MentorChat: React.FC<MentorChatProps> = ({
                 <div ref={endRef} />
             </div>
 
-            <div className="p-4 border-t border-[#30363d] bg-[#161b22]">
+            <div className="p-4 border-t border-white/[0.06] bg-[#0d1117]">
                 <div className="relative">
                     <textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
-                        className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none h-20 scrollbar-hide"
+                        className="w-full bg-[#161b22] border border-white/[0.08] rounded-lg pl-4 pr-10 py-3 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none h-20 scrollbar-hide"
                         disabled={isStreaming}
                     />
                     <button

@@ -3,7 +3,369 @@
 > vite
 
 
-  VITE v5.4.21  ready in 219 ms
+  VITE v5.4.21  ready in 555 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1323|    }
+1324|  }
+1325|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1326|  body {
+1327|    background-color: #09090b;
+11:15:17 AM [vite] hmr update /src/components/CodeEditor.tsx, /src/index.css
+11:15:17 AM [vite] Internal server error: /home/nexion/Desktop/anti ai/frontend/src/components/CodeEditor.tsx: 'import' and 'export' may only appear at the top level. (249:4)
+
+  247 |     };
+  248 |
+> 249 |     export default CodeEditor;
+      |     ^
+  250 |
+  Plugin: vite:react-babel
+  File: /home/nexion/Desktop/anti ai/frontend/src/components/CodeEditor.tsx:249:4
+  247|      };
+  248|  
+  249|      export default CodeEditor;
+     |      ^
+  250|  
+      at constructor (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+      at TypeScriptParserMixin.raise (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12871:18)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseStatementListItem (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+      at TypeScriptParserMixin.parseBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseBlock (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+      at TypeScriptParserMixin.parseFunctionBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+      at TypeScriptParserMixin.parseArrowExpression (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+      at TypeScriptParserMixin.parseExprAtom (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+      at TypeScriptParserMixin.parseExprAtom (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+      at TypeScriptParserMixin.parseUpdate (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+      at TypeScriptParserMixin.parseExprOps (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+      at TypeScriptParserMixin.allowInAnd (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+      at TypeScriptParserMixin.parseVar (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13384:91)
+      at TypeScriptParserMixin.parseVarStatement (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13230:10)
+      at TypeScriptParserMixin.parseVarStatement (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9408:31)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12851:23)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseModuleItem (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+      at TypeScriptParserMixin.parseBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseProgram (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+      at TypeScriptParserMixin.parseTopLevel (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+      at parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+      at parser (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:261:32)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:273:13
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1386|    }
+1387|  }
+1388|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1389|  body {
+1390|    background-color: #09090b;
+11:15:47 AM [vite] hmr update /src/components/CodeEditor.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1386|    }
+1387|  }
+1388|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1389|  body {
+1390|    background-color: #09090b;
+11:17:03 AM [vite] hmr update /src/components/CodeEditor.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1386|    }
+1387|  }
+1388|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1389|  body {
+1390|    background-color: #09090b;
+11:17:20 AM [vite] hmr update /src/components/CodeEditor.tsx, /src/index.css
+11:17:20 AM [vite] Internal server error: /home/nexion/Desktop/anti ai/frontend/src/components/CodeEditor.tsx: 'import' and 'export' may only appear at the top level. (249:4)
+
+  247 |     };
+  248 |
+> 249 |     export default CodeEditor;
+      |     ^
+  250 |
+  Plugin: vite:react-babel
+  File: /home/nexion/Desktop/anti ai/frontend/src/components/CodeEditor.tsx:249:4
+  247|      };
+  248|  
+  249|      export default CodeEditor;
+     |      ^
+  250|  
+      at constructor (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+      at TypeScriptParserMixin.raise (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12871:18)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseStatementListItem (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+      at TypeScriptParserMixin.parseBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseBlock (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+      at TypeScriptParserMixin.parseFunctionBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+      at TypeScriptParserMixin.parseArrowExpression (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+      at TypeScriptParserMixin.parseParenAndDistinguishExpression (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+      at TypeScriptParserMixin.parseExprAtom (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+      at TypeScriptParserMixin.parseExprAtom (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+      at TypeScriptParserMixin.parseUpdate (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+      at TypeScriptParserMixin.parseExprOps (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+      at TypeScriptParserMixin.allowInAnd (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+      at TypeScriptParserMixin.parseMaybeAssignAllowIn (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+      at TypeScriptParserMixin.parseVar (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13384:91)
+      at TypeScriptParserMixin.parseVarStatement (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13230:10)
+      at TypeScriptParserMixin.parseVarStatement (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9408:31)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12851:23)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseModuleItem (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+      at TypeScriptParserMixin.parseBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseProgram (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+      at TypeScriptParserMixin.parseTopLevel (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+      at parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+      at parser (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:261:32)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:273:13
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1386|    }
+1387|  }
+1388|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1389|  body {
+1390|    background-color: #09090b;
+11:17:20 AM [vite] hmr update /src/components/CodeEditor.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1386|    }
+1387|  }
+1388|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1389|  body {
+1390|    background-color: #09090b;
+11:19:20 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1452|    }
+1453|  }
+1454|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1455|  body {
+1456|    background-color: #09090b;
+11:22:07 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+11:22:07 AM [vite] Internal server error: /home/nexion/Desktop/anti ai/frontend/src/components/Navbar.tsx: Identifier 'LayoutGroup' has already been declared. (4:9)
+
+  2 | import { Activity } from 'lucide-react';
+  3 | import { LayoutGroup, motion } from 'motion/react';
+> 4 | import { LayoutGroup, motion } from 'motion/react';
+    |          ^
+  5 | import { TextRotate } from './ui/text-rotate';
+  6 | import GradientText from './ui/GradientText';
+  7 | import { Button } from './ui/moving-border';
+  Plugin: vite:react-babel
+  File: /home/nexion/Desktop/anti ai/frontend/src/components/Navbar.tsx:4:9
+  2  |  import { Activity } from 'lucide-react';
+  3  |  import { LayoutGroup, motion } from 'motion/react';
+  4  |  import { LayoutGroup, motion } from 'motion/react';
+     |           ^
+  5  |  import { TextRotate } from './ui/text-rotate';
+  6  |  import GradientText from './ui/GradientText';
+      at constructor (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+      at TypeScriptParserMixin.raise (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+      at TypeScriptScopeHandler.declareName (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:4866:21)
+      at TypeScriptParserMixin.declareNameFromIdentifier (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:7567:16)
+      at TypeScriptParserMixin.checkIdentifier (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:7563:12)
+      at TypeScriptParserMixin.checkLVal (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:7500:12)
+      at TypeScriptParserMixin.finishImportSpecifier (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14266:10)
+      at TypeScriptParserMixin.parseImportSpecifier (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14419:17)
+      at TypeScriptParserMixin.parseImportSpecifier (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10148:18)
+      at TypeScriptParserMixin.parseNamedImportSpecifiers (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14398:36)
+      at TypeScriptParserMixin.parseImportSpecifiersAndAfter (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14242:37)
+      at TypeScriptParserMixin.parseImport (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14235:17)
+      at TypeScriptParserMixin.parseImport (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9353:26)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12876:27)
+      at TypeScriptParserMixin.parseStatementContent (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+      at TypeScriptParserMixin.parseStatementLike (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+      at TypeScriptParserMixin.parseModuleItem (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+      at TypeScriptParserMixin.parseBlockBody (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+      at TypeScriptParserMixin.parseProgram (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+      at TypeScriptParserMixin.parseTopLevel (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+      at TypeScriptParserMixin.parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+      at parse (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+      at parser (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (/home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+      at transform.next (<anonymous>)
+      at step (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:261:32)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:223:11)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:189:28
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:113:33
+      at step (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:287:14)
+      at /home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/nexion/Desktop/anti ai/frontend/node_modules/gensync/index.js:223:11)
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1488|    }
+1489|  }
+1490|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1491|  body {
+1492|    background-color: #09090b;
+11:22:32 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1488|    }
+1489|  }
+1490|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1491|  body {
+1492|    background-color: #09090b;
+11:22:45 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1488|    }
+1489|  }
+1490|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1491|  body {
+1492|    background-color: #09090b;
+11:23:41 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1488|    }
+1489|  }
+1490|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1491|  body {
+1492|    background-color: #09090b;
+11:23:52 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1488|    }
+1489|  }
+1490|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1491|  body {
+1492|    background-color: #09090b;
+11:25:50 AM [vite] hmr update /src/App.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+11:26:18 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+11:26:18 AM [vite] hmr update /src/components/ui/CRTOverlay.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+11:26:18 AM [vite] hmr update /src/App.tsx, /src/index.css
+11:26:18 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+11:27:51 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+11:27:51 AM [vite] page reload src/components/ui/moving-border.tsx
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1503|    }
+1504|  }
+1505|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1506|  body {
+1507|    background-color: #09090b;
+11:29:08 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1510|    }
+1511|  }
+1512|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1513|  body {
+1514|    background-color: #09090b;
+11:29:31 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1510|    }
+1511|  }
+1512|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1513|  body {
+1514|    background-color: #09090b;
+11:32:38 AM [vite] page reload index.html
+[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1510|    }
+1511|  }
+1512|  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1513|  body {
+1514|    background-color: #09090b;
+11:32:40 AM [vite] hmr update /src/index.css
+11:33:49 AM [vite] changed tsconfig file detected: /home/nexion/Desktop/anti ai/frontend/tsconfig.app.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+11:33:49 AM [vite] page reload tsconfig.app.json
+11:34:06 AM [vite] hmr update /src/components/ui/CRTOverlay.tsx
+11:34:06 AM [vite] hmr update /src/components/ui/CRTOverlay.tsx
+11:37:58 AM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
+11:38:00 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
+11:38:12 AM [vite] hmr update /src/components/ui/moving-border.tsx, /src/index.css
