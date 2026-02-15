@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 export const USE_MOCK = false; // Toggle for demo safety
 
 export interface AnalyzeParams {
