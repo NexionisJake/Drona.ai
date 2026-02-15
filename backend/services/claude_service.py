@@ -190,20 +190,55 @@ Provide a short, 1-sentence hint to help them fix it. Do not write the fix."""
     except Exception as e:
         yield f"Error: {str(e)}"
 
-async def stream_mentor_chat(selected_code: str, user_query: str, context_summary: str, full_file: str = ""):
+async def stream_mentor_chat(selected_code: str, user_query: str, context_summary: str, full_file: str = "", workspace_context: dict = None):
     """
     Streams a response to a user's question about code.
     Receives both selected_code (highlighted snippet) and full_file (entire file)
     so Claude has global context but focuses on the highlighted section.
+    Now also supports workspace_context for multi-file awareness.
     """
     if not client:
         yield "Error: Anthropic API Key not configured."
         return
 
-    # Build context block: include full file for global awareness
-    file_context = full_file if full_file else context_summary
+    # Build context block with workspace awareness if available
+    if workspace_context:
+        # Build rich workspace context prompt
+        active_file = workspace_context.get("activeFile", {})
+        related_files = workspace_context.get("relatedFiles", [])
+        file_tree = workspace_context.get("fileTree", [])
 
-    message = f"""FULL FILE (for context):
+        # Limit file tree display to 50 files
+        tree_display = "\n".join(file_tree[:50])
+        if len(file_tree) > 50:
+            tree_display += f"\n... and {len(file_tree) - 50} more files"
+
+        # Build related files section
+        related_section = ""
+        if related_files:
+            related_section = "\n\nRELATED FILES:\n"
+            for rf in related_files:
+                related_section += f"\n--- {rf['path']} ({rf['relation']}) ---\n{rf['content']}\n"
+
+        message = f"""WORKSPACE STRUCTURE:
+{tree_display}
+
+ACTIVE FILE: {active_file.get('path', 'unknown')}
+{active_file.get('content', '')}
+{related_section}
+
+HIGHLIGHTED SECTION (focus on this):
+{selected_code if selected_code else "(No specific selection — user is asking about the file in general.)"}
+
+User Query: "{user_query}"
+
+Answer the user's question conceptually. You have full workspace context - reference related files when relevant. Remember: NO CODE BLOCKS."""
+
+    else:
+        # Fallback to old single-file format
+        file_context = full_file if full_file else context_summary
+
+        message = f"""FULL FILE (for context):
 {file_context}
 
 HIGHLIGHTED SECTION (focus on this):
@@ -216,7 +251,7 @@ Answer the user's question conceptually. Focus on the highlighted section but us
     try:
         async with client.messages.stream(
             model=MODEL,
-            max_tokens=400,
+            max_tokens=500,  # Increased from 400 to accommodate richer responses
             system=MENTOR_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": message}]
         ) as stream:

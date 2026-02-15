@@ -193,12 +193,23 @@ export interface AnalyzeErrorParams {
     onError: (error: string) => void;
 }
 
+export interface WorkspaceContext {
+    activeFile: { path: string; content: string };
+    relatedFiles: Array<{
+        path: string;
+        content: string;
+        relation: 'import' | 'sibling' | 'dependency'
+    }>;
+    fileTree: string[];
+}
+
 export interface MentorChatParams {
     selectedCode: string;
     fullFile: string;
     userQuery: string;
     contextSummary: string;
     history?: string;
+    workspaceContext?: WorkspaceContext;
     onChunk: (text: string) => void;
     onDone: () => void;
     onError: (error: string) => void;
@@ -241,6 +252,7 @@ export async function mentorChat({
     userQuery,
     contextSummary,
     history,
+    workspaceContext,
     onChunk,
     onDone,
     onError
@@ -255,7 +267,8 @@ export async function mentorChat({
                 full_file: fullFile,
                 user_query: userQuery,
                 context_summary: contextSummary,
-                history: history || null
+                history: history || null,
+                workspace_context: workspaceContext || null
             })
         });
 

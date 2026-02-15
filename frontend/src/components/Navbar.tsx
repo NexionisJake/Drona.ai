@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { LayoutGroup, motion } from 'motion/react';
 import { TextRotate } from './ui/text-rotate';
 import GradientText from './ui/GradientText';
@@ -53,8 +53,8 @@ const Navbar: React.FC<NavbarProps> = ({ score, onRunCode }) => {
             {/* Center — DRONA.AI logo + GradientText title + Run Button */}
             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-                        <Activity className="w-4.5 h-4.5 text-blue-400" />
+                    <div className="relative flex items-center justify-center w-12 h-12">
+                        <img src="/logo.png" alt="Drona.AI" className="w-full h-full object-contain" />
                     </div>
                     <GradientText
                         colors={["#5227FF", "#FF9FFC", "#B19EEF", "#5227FF"]}

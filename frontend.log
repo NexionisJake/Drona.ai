@@ -3,29 +3,7 @@
 > vite
 
 
-  VITE v5.4.21  ready in 281 ms
+  VITE v5.4.21  ready in 220 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-1:21:44 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:25:05 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:30:46 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:20 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:24 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:35 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:37 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:43 PM [vite] hmr update /src/App.tsx, /src/index.css
-1:31:51 PM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
-1:31:57 PM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
-1:32:06 PM [vite] hmr update /src/components/Navbar.tsx, /src/index.css
-1:36:59 PM [vite] hmr update /src/components/MentorChat.tsx, /src/index.css
-1:37:12 PM [vite] hmr update /src/components/QuizChat.tsx, /src/index.css
-1:41:07 PM [vite] page reload package.json
-1:41:32 PM [vite] hmr update /src/components/MentorChat.tsx, /src/index.css
-1:41:34 PM [vite] ✨ new dependencies optimized: remark-breaks
-1:41:34 PM [vite] ✨ optimized dependencies changed. reloading
-1:41:35 PM [vite] hmr update /src/components/QuizChat.tsx, /src/index.css
-1:43:55 PM [vite] hmr update /src/components/MentorChat.tsx, /src/index.css
-1:43:57 PM [vite] hmr update /src/components/QuizChat.tsx, /src/index.css
-1:46:31 PM [vite] hmr update /src/index.css, /src/components/MentorChat.tsx, /src/components/QuizChat.tsx
-1:46:44 PM [vite] hmr update /src/index.css, /src/components/MentorChat.tsx, /src/components/QuizChat.tsx

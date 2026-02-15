@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ShieldAlert } from 'lucide-react';
 
 interface LockOverlayProps {
@@ -12,18 +12,29 @@ const LockOverlay: React.FC<LockOverlayProps> = ({ isVisible, linesPasted, score
     // Keep in DOM briefly after hiding to allow exit animation
     const [shouldRender, setShouldRender] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
+    const animationFrameRef = useRef<number>(0);
 
     useEffect(() => {
         if (isVisible) {
             setShouldRender(true);
             // Trigger enter animation on next frame
-            requestAnimationFrame(() => setAnimateIn(true));
+            animationFrameRef.current = requestAnimationFrame(() => setAnimateIn(true));
         } else {
             setAnimateIn(false);
             // Remove from DOM after exit animation
             const timer = setTimeout(() => setShouldRender(false), 300);
-            return () => clearTimeout(timer);
+            return () => {
+                clearTimeout(timer);
+                if (animationFrameRef.current) {
+                    cancelAnimationFrame(animationFrameRef.current);
+                }
+            };
         }
+        return () => {
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+        };
     }, [isVisible]);
 
     if (!shouldRender) return null;

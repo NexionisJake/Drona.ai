@@ -30,7 +30,7 @@ const MentorSidebar: React.FC<MentorSidebarProps> = ({
     onChatMessage = () => { }
 }) => {
     return (
-        <div className="h-full bg-[#0d1117] flex flex-col font-sans border-l border-white/[0.06]">
+        <div className="h-full bg-[#0d1117] flex flex-col font-sans border-l border-white/[0.12]">
             <div className="sticky top-0 z-10 flex items-center gap-2.5 px-5 py-3.5 border-b border-white/[0.06] bg-[#0d1117]/80 backdrop-blur-md">
                 {quizState === 'active' ? (
                     <Brain className="w-4.5 h-4.5 text-red-400 animate-pulse" />

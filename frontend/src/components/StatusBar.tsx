@@ -9,7 +9,7 @@ interface StatusBarProps {
     isMockMode?: boolean;
 }
 
-export const StatusBar: React.FC<StatusBarProps> = ({
+const StatusBarComponent: React.FC<StatusBarProps> = ({
     errors = 0,
     warnings = 0,
     line = 1,
@@ -66,3 +66,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         </div>
     );
 };
+
+// Memoize to prevent re-renders when props haven't changed
+export const StatusBar = React.memo(StatusBarComponent);

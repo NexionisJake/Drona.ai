@@ -59,6 +59,8 @@ const ScannerCardStream = ({
     const [isScanning, setIsScanning] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const sizeRef = useRef({ width: 300, height: 400 });
+    const isVisibleRef = useRef(true);
+    const animationFrameIdRef = useRef<number>(0);
 
     const cards = useMemo(() => {
         const totalCards = codeSnippets.length * repeat;
@@ -95,6 +97,26 @@ const ScannerCardStream = ({
 
         if (!cardLine || !particleCanvas || !scannerCanvas || !container) return;
 
+        // --- Intersection Observer for visibility detection ---
+        // Pause animation when component is hidden to save CPU/GPU
+        const intersectionObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    isVisibleRef.current = entry.isIntersecting;
+                    if (!entry.isIntersecting && animationFrameIdRef.current) {
+                        // Component hidden - pause animation
+                        cancelAnimationFrame(animationFrameIdRef.current);
+                        animationFrameIdRef.current = 0;
+                    } else if (entry.isIntersecting && !animationFrameIdRef.current) {
+                        // Component visible - resume animation
+                        animationFrameIdRef.current = requestAnimationFrame(animate);
+                    }
+                });
+            },
+            { threshold: 0 }
+        );
+        intersectionObserver.observe(container);
+
         // --- ResizeObserver for dynamic sidebar sizing ---
         const updateSize = () => {
             const rect = container.getBoundingClientRect();
@@ -120,7 +142,6 @@ const ScannerCardStream = ({
         let { width, height } = sizeRef.current;
 
         cards.forEach(card => originalExplanations.current.set(card.id, card.data.explanation));
-        let animationFrameId: number;
 
         // --- Three.js setup using container dimensions ---
         const scene = new THREE.Scene();
@@ -288,6 +309,12 @@ const ScannerCardStream = ({
 
         // --- Main animation loop ---
         const animate = (currentTime: number) => {
+            // Check visibility before processing frame
+            if (!isVisibleRef.current) {
+                animationFrameIdRef.current = 0;
+                return;
+            }
+
             const w = sizeRef.current.width;
             const h = sizeRef.current.height;
             const deltaTime = (currentTime - cardStreamState.current.lastTime) / 1000;
@@ -334,12 +361,16 @@ const ScannerCardStream = ({
                 ctx.fill();
             });
 
-            animationFrameId = requestAnimationFrame(animate);
+            animationFrameIdRef.current = requestAnimationFrame(animate);
         };
-        animationFrameId = requestAnimationFrame(animate);
+        animationFrameIdRef.current = requestAnimationFrame(animate);
 
         return () => {
-            cancelAnimationFrame(animationFrameId);
+            if (animationFrameIdRef.current) {
+                cancelAnimationFrame(animationFrameIdRef.current);
+                animationFrameIdRef.current = 0;
+            }
+            intersectionObserver.disconnect();
             resizeObserver.disconnect();
             renderer.dispose();
             geometry.dispose();

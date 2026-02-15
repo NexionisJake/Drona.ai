@@ -12,16 +12,18 @@ export function useFlowState() {
     const [streak, setStreak] = useState(0);
     const [wpm, setWpm] = useState(0);
 
-
-    // Internal tracking
+    // Internal tracking - use refs to avoid triggering re-renders on every keystroke
+    const streakRef = useRef<number>(0);
     const lastKeystrokeTime = useRef<number>(Date.now());
     const keystrokesInWindow = useRef<number[]>([]); // Timestamps of recent keystrokes
     const streakTimeout = useRef<any>(null);
     const decayFrameRef = useRef<number>(0);
+    const lastWpmUpdate = useRef<number>(0);
 
     const STREAK_TIMEOUT_MS = 2000; // Break streak if no typing for 2s
     const FLOW_THRESHOLD = 15;      // Keystrokes to enter "Flow"
     const MAX_STREAK = 150;         // Max visuals cap
+    const WPM_UPDATE_THROTTLE = 500; // Update WPM display every 500ms max
 
     // Intensity is derived from streak, but we want smooth decay or updates.
     // If we want "high frequency" updates for a smooth decay/glow pulse, we should do it in the component via requestAnimationFrame
@@ -73,6 +75,12 @@ export function useFlowState() {
 
     const calculateWpm = useCallback(() => {
         const now = Date.now();
+
+        // Throttle WPM updates to avoid frequent re-renders
+        if (now - lastWpmUpdate.current < WPM_UPDATE_THROTTLE) {
+            return;
+        }
+
         // Remove keystrokes older than 60s
         keystrokesInWindow.current = keystrokesInWindow.current.filter(t => now - t < 60000);
 
@@ -80,6 +88,7 @@ export function useFlowState() {
         // Approx 5 chars per word
         const newWpm = Math.round((count / 5));
         setWpm(newWpm);
+        lastWpmUpdate.current = now;
     }, []);
 
     const registerKeystroke = useCallback(() => {
@@ -87,21 +96,26 @@ export function useFlowState() {
         lastKeystrokeTime.current = now;
         keystrokesInWindow.current.push(now);
 
-        setStreak(prev => {
-            const next = prev + 1;
+        // Update ref immediately
+        streakRef.current += 1;
+        const currentStreak = streakRef.current;
+
+        // Only update state (trigger re-render) every 5 keystrokes or at key thresholds
+        if (currentStreak % 5 === 0 || currentStreak === FLOW_THRESHOLD || currentStreak === FLOW_THRESHOLD * 2) {
+            setStreak(currentStreak);
+
             // Visual feedback thresholds
-            if (next === FLOW_THRESHOLD || next === FLOW_THRESHOLD * 2 || next === FLOW_THRESHOLD * 5) {
-                // Could trigger specific level-up sounds/effects here via return value or side effect
+            if (currentStreak === FLOW_THRESHOLD || currentStreak === FLOW_THRESHOLD * 2 || currentStreak === FLOW_THRESHOLD * 5) {
                 soundManager.playFlowRankUp();
             }
-            return next;
-        });
+        }
 
         calculateWpm();
 
         // Reset timeout
         if (streakTimeout.current) clearTimeout(streakTimeout.current);
         streakTimeout.current = setTimeout(() => {
+            streakRef.current = 0;
             setStreak(0);
         }, STREAK_TIMEOUT_MS);
 

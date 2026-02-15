@@ -45,14 +45,27 @@ export const useBuilderScore = (initialScore: number = 0): UseBuilderScoreReturn
 
     const previousLengthRef = useRef<number>(0);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Persist score changes
+    // Persist score changes (debounced to avoid excessive localStorage writes)
     useEffect(() => {
-        const data = JSON.stringify({
-            value: score,
-            hash: simpleHash(score)
-        });
-        localStorage.setItem('builderScore', data);
+        if (persistTimerRef.current) {
+            clearTimeout(persistTimerRef.current);
+        }
+
+        persistTimerRef.current = setTimeout(() => {
+            const data = JSON.stringify({
+                value: score,
+                hash: simpleHash(score)
+            });
+            localStorage.setItem('builderScore', data);
+        }, 1000);
+
+        return () => {
+            if (persistTimerRef.current) {
+                clearTimeout(persistTimerRef.current);
+            }
+        };
     }, [score]);
 
     const updateOnTyping = useCallback((newContent: string) => {

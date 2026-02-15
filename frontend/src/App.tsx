@@ -1,12 +1,14 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import CodeEditor from './components/CodeEditor';
 import MentorSidebar from './components/MentorSidebar';
 import FileExplorer from './components/FileExplorer';
 import LockOverlay from './components/LockOverlay';
 import TerminalPanel from './components/ide/TerminalPanel';
-import { Toaster, toast } from 'react-hot-toast';
+import { WelcomeScreen } from './components/ide/WelcomeScreen';
+import { Toaster as HotToaster, toast } from 'react-hot-toast';
+import { Toaster } from 'sonner';
 import type { OnMount } from '@monaco-editor/react';
 import { usePasteDetection } from './hooks/usePasteDetection';
 import { useUndoEscape } from './hooks/useUndoEscape';
@@ -15,8 +17,12 @@ import { analyzePaste, validateAnswer, analyzeError, mentorChat, executeCode } f
 import { soundManager } from './utils/SoundManager';
 import { StatusBar } from '@/components/StatusBar';
 import type { Message } from './components/MentorChat';
+import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
+import { buildWorkspaceContext } from './utils/contextBuilder';
 
-function App() {
+function AppContent() {
+    // Get workspace context
+    const { activeFile, workspaceFiles, fileIndex, fileTree, loadWorkspace, restoreWorkspace, updateFileContent, isLoading: workspaceLoading, recentWorkspaceHandle } = useWorkspace();
     const { score, updateOnTyping, deductScore, addScore } = useBuilderScore(0);
     const [isLocked, setIsLocked] = useState(false);
     const [linesPasted, setLinesPasted] = useState(0);
@@ -50,6 +56,15 @@ function App() {
     const editorRef = useRef<any>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
+    // Cleanup: Abort any in-flight SSE streams on unmount
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
     const handleEditorMount: OnMount = (editor) => {
         editorRef.current = editor;
     };
@@ -57,6 +72,10 @@ function App() {
     const handleEditorChange = (value: string | undefined) => {
         if (value && !isLocked) {
             updateOnTyping(value);
+            // Update workspace file cache if we have an active file
+            if (activeFile) {
+                updateFileContent(activeFile.path, value);
+            }
         }
     };
 
@@ -215,11 +234,20 @@ function App() {
 
         const context = editorRef.current?.getModel()?.getValue() || "";
 
+        // Build workspace context if available
+        const workspaceContext = buildWorkspaceContext(
+            activeFile,
+            workspaceFiles,
+            fileIndex,
+            fileTree
+        );
+
         await mentorChat({
             selectedCode: selectedContext, // Might be empty if just chatting generally, or highlighting
             userQuery: msg,
             contextSummary: context,
             fullFile: context,
+            workspaceContext: workspaceContext || undefined,
             onChunk: (text) => {
                 if (text === '[DONE]') return;
                 setChatMessages(prev => {
@@ -289,27 +317,42 @@ function App() {
             <Navbar score={score} onRunCode={handleRunCode} />
 
             <div className="flex-1 flex h-full relative min-h-0">
-                {/* Left Sidebar — File Explorer */}
-                <div className="w-[15%] h-full min-w-[180px] shrink-0">
-                    <FileExplorer />
-                </div>
+                {/* Left Sidebar — File Explorer (Hidden when no workspace loaded) */}
+                {fileTree.length > 0 && (
+                    <div className="w-[15%] h-full min-w-[180px] shrink-0">
+                        <FileExplorer />
+                    </div>
+                )}
 
-                {/* Center — Monaco Editor */}
-                <div className="flex-1 relative bg-[#1e1e1e] pt-14 min-w-0">
-                    <CodeEditor
-                        isLocked={isLocked}
-                        onEditorMount={handleEditorMount}
-                        onContentChange={handleEditorChange}
-                        onErrorDetected={handleErrorDetected}
-                        onMentorTrigger={handleMentorTrigger}
-                        onCursorChange={(line, col) => setCursorStats({ line, col })}
-                        onMarkersChange={(errors, warnings) => setMarkerStats({ errors, warnings })}
-                    />
-                    <LockOverlay
-                        isVisible={isLocked}
-                        linesPasted={linesPasted}
-                        scorePenalty={scorePenalty}
-                    />
+                {/* Center — Monaco Editor or Welcome Screen */}
+                <div className={`flex-1 relative bg-[#1e1e1e] min-w-0 ${activeFile ? 'pt-14' : ''}`}>
+                    {activeFile ? (
+                        <>
+                            <CodeEditor
+                                isLocked={isLocked}
+                                onEditorMount={handleEditorMount}
+                                onContentChange={handleEditorChange}
+                                onErrorDetected={handleErrorDetected}
+                                onMentorTrigger={handleMentorTrigger}
+                                onCursorChange={(line, col) => setCursorStats({ line, col })}
+                                onMarkersChange={(errors, warnings) => setMarkerStats({ errors, warnings })}
+                                fileContent={workspaceFiles.get(activeFile.path) || ''}
+                                fileName={activeFile.name}
+                            />
+                            <LockOverlay
+                                isVisible={isLocked}
+                                linesPasted={linesPasted}
+                                scorePenalty={scorePenalty}
+                            />
+                        </>
+                    ) : (
+                        <WelcomeScreen
+                            onOpenWorkspace={loadWorkspace}
+                            onRestoreWorkspace={restoreWorkspace}
+                            recentWorkspaceHandle={recentWorkspaceHandle}
+                            isLoading={workspaceLoading}
+                        />
+                    )}
                     {isTerminalOpen && (
                         <TerminalPanel
                             stdout={terminalOutput.stdout}
@@ -345,13 +388,22 @@ function App() {
                 isMockMode={isMockMode}
             />
 
-            <Toaster position="top-right" toastOptions={{
+            <HotToaster position="top-right" toastOptions={{
                 style: {
                     background: '#333',
                     color: '#fff',
                 },
             }} />
+            <Toaster position="top-right" theme="dark" />
         </div>
+    );
+}
+
+function App() {
+    return (
+        <WorkspaceProvider>
+            <AppContent />
+        </WorkspaceProvider>
     );
 }
 

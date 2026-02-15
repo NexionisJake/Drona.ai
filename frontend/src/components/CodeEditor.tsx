@@ -3,7 +3,8 @@ import React from 'react';
 import Editor, { type OnMount, type OnChange } from '@monaco-editor/react';
 import { useFlowState } from '../hooks/useFlowState';
 import { soundManager } from '../utils/SoundManager';
-import { Zap, Volume2, VolumeX } from 'lucide-react';
+import { detectLanguage } from '../utils/fileSystem';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface CodeEditorProps {
     isLocked: boolean;
@@ -13,27 +14,21 @@ interface CodeEditorProps {
     onMentorTrigger?: (selectedCode: string, fullFile: string) => void;
     onCursorChange?: (line: number, col: number) => void;
     onMarkersChange?: (errors: number, warnings: number) => void;
+    fileContent?: string;
+    fileName?: string;
 }
 
-const DEFAULT_CODE = `from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-def health_check():
-    return {"status": "Anti-Copilot API Running"}`;
-
-const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMount, onContentChange, onErrorDetected, onMentorTrigger, onCursorChange, onMarkersChange }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({
+    isLocked: _isLocked,
+    onEditorMount,
+    onContentChange,
+    onErrorDetected,
+    onMentorTrigger,
+    onCursorChange,
+    onMarkersChange,
+    fileContent,
+    fileName
+}) => {
     const editorRef = React.useRef<any>(null);
     const monacoRef = React.useRef<any>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -45,6 +40,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
     // Typing-aware debounce: tracks last keystroke time
     const typingTimerRef = React.useRef<any>(null);
     const errorCheckTimerRef = React.useRef<any>(null);
+
+    // Debounce refs for high-frequency event handlers
+    const cursorDebounceRef = React.useRef<any>(null);
+    const markerDebounceRef = React.useRef<any>(null);
 
     const validateCode = (value: string, model: any) => {
         if (!monacoRef.current) return;
@@ -143,25 +142,43 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
             registerKeystroke();
         });
 
-        // 4. Cursor Position Tracking
+        // 4. Cursor Position Tracking (Debounced to prevent re-render cascade)
         if (onCursorChange) {
             editor.onDidChangeCursorPosition((e: any) => {
-                onCursorChange(e.position.lineNumber, e.position.column);
+                // Debounce cursor updates to 200ms to avoid re-rendering StatusBar on every keystroke
+                if (cursorDebounceRef.current) clearTimeout(cursorDebounceRef.current);
+                cursorDebounceRef.current = setTimeout(() => {
+                    onCursorChange(e.position.lineNumber, e.position.column);
+                }, 200);
             });
         }
 
-        // 5. Marker Tracking (Errors/Warnings)
+        // 5. Marker Tracking (Errors/Warnings) - Debounced to prevent re-render cascade
         if (onMarkersChange) {
             monaco.editor.onDidChangeMarkers(() => {
-                const model = editor.getModel();
-                if (!model) return;
-                const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-                const errors = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Error).length;
-                const warnings = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Warning).length;
-                onMarkersChange(errors, warnings);
+                // Debounce marker updates to 250ms to avoid re-rendering StatusBar on every validation
+                if (markerDebounceRef.current) clearTimeout(markerDebounceRef.current);
+                markerDebounceRef.current = setTimeout(() => {
+                    const model = editor.getModel();
+                    if (!model) return;
+                    const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+                    const errors = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Error).length;
+                    const warnings = markers.filter((m: any) => m.severity === monaco.MarkerSeverity.Warning).length;
+                    onMarkersChange(errors, warnings);
+                }, 250);
             });
         }
     };
+
+    // Cleanup debounce timers on unmount
+    React.useEffect(() => {
+        return () => {
+            if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+            if (errorCheckTimerRef.current) clearTimeout(errorCheckTimerRef.current);
+            if (cursorDebounceRef.current) clearTimeout(cursorDebounceRef.current);
+            if (markerDebounceRef.current) clearTimeout(markerDebounceRef.current);
+        };
+    }, []);
 
     // Update CSS variables for Flow Mode efficiently
     React.useEffect(() => {
@@ -198,12 +215,15 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
         }, 2500);
     };
 
+    // Detect language from file name
+    const language = fileName ? detectLanguage(fileName) : 'plaintext';
+
     return (
         <div ref={containerRef} className="h-full w-full relative group">
             <Editor
                 height="100%"
-                defaultLanguage="python"
-                defaultValue={DEFAULT_CODE}
+                language={language}
+                value={fileContent}
                 theme="vs-dark"
                 options={{
                     minimap: { enabled: false },
@@ -235,22 +255,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
             <div className={`absolute top-4 right-6 z-20 transition-opacity duration-500 ${flowState.streak > 5 ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="flex flex-col items-end">
                     <div className="flex items-center gap-2">
-                        <span className={`text-4xl font-black italic tabular-nums tracking-tighter ${flowState.intensity > 0.8 ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse' :
-                            'text-blue-400 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]'
+                        <span className={`text-xl font-bold font-mono tabular-nums tracking-tight ${flowState.intensity > 0.8 ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' :
+                            'text-blue-400 drop-shadow-[0_0_4px_rgba(59,130,246,0.4)]'
                             }`}>
                             {flowState.streak}x
                         </span>
-                        <Zap className={`w-6 h-6 ${flowState.intensity > 0.8 ? 'text-yellow-400 fill-yellow-400 animate-bounce' : 'text-blue-400'
-                            }`} />
                     </div>
-                    <div className="text-xs font-mono text-gray-500 font-bold uppercase tracking-widest mt-1">
-                        Running Hot • {flowState.wpm > 0 && `${flowState.wpm} WPM`}
+                    <div className="text-[10px] font-mono text-gray-500 font-medium uppercase tracking-wider mt-0.5">
+                        {flowState.wpm > 0 ? `${flowState.wpm} WPM` : 'FLOW'}
                     </div>
 
                     {/* Intensity Bar */}
-                    <div className="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
+                    <div className="w-16 h-0.5 bg-gray-800 mt-1 rounded-full overflow-hidden">
                         <div
-                            className={`h-full transition-all duration-100 ${flowState.intensity > 0.8 ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-blue-500'
+                            className={`h-full transition-all duration-100 ${flowState.intensity > 0.8 ? 'bg-purple-500' : 'bg-blue-500'
                                 }`}
                             style={{ width: `${Math.min(flowState.intensity * 100, 100)}%` }}
                         />
@@ -273,4 +291,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ isLocked: _isLocked, onEditorMo
     );
 };
 
-export default CodeEditor;
+// Memoize to prevent re-renders from parent state changes
+export default React.memo(CodeEditor, (prevProps, nextProps) => {
+    // Only re-render if essential props change
+    return (
+        prevProps.isLocked === nextProps.isLocked &&
+        prevProps.fileContent === nextProps.fileContent &&
+        prevProps.fileName === nextProps.fileName
+    );
+});

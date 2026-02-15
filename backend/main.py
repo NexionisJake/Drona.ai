@@ -202,7 +202,24 @@ async def analyze_error(request: AnalyzeErrorRequest):
 async def mentor_chat(request: MentorChatRequest):
     """
     Streams response to manual mentor query.
+    Now supports workspace_context for multi-file awareness.
     """
+    # Convert workspace_context to dict if present
+    workspace_ctx_dict = None
+    if request.workspace_context:
+        workspace_ctx_dict = {
+            "activeFile": request.workspace_context.activeFile,
+            "relatedFiles": [
+                {
+                    "path": rf.path,
+                    "content": rf.content,
+                    "relation": rf.relation
+                }
+                for rf in request.workspace_context.relatedFiles
+            ],
+            "fileTree": request.workspace_context.fileTree
+        }
+
     if not claude_service.client:
         # Fallback to mock
         async def mock_gen():
@@ -213,7 +230,13 @@ async def mentor_chat(request: MentorChatRequest):
 
     async def event_generator():
         try:
-            iterator = claude_service.stream_mentor_chat(request.selected_code, request.user_query, request.context_summary, request.full_file or "")
+            iterator = claude_service.stream_mentor_chat(
+                request.selected_code,
+                request.user_query,
+                request.context_summary,
+                request.full_file or "",
+                workspace_ctx_dict
+            )
             async for chunk in iterator:
                 yield {"data": chunk}
             yield {"data": "[DONE]"}

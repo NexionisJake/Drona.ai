@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 class AnalyzePasteRequest(BaseModel):
     code_snippet: str       # The pasted block (>= 25 lines)
@@ -25,12 +25,23 @@ class AnalyzeErrorRequest(BaseModel):
     line_code: str
     context_summary: str
 
+class RelatedFile(BaseModel):
+    path: str
+    content: str
+    relation: str  # 'import' | 'sibling' | 'dependency'
+
+class WorkspaceContextData(BaseModel):
+    activeFile: Dict[str, str]  # { path: str, content: str }
+    relatedFiles: List[RelatedFile]
+    fileTree: List[str]  # List of file paths
+
 class MentorChatRequest(BaseModel):
     selected_code: str
     full_file: Optional[str] = None
     user_query: str
     context_summary: str
     history: Optional[str] = None # For chat history if needed
+    workspace_context: Optional[WorkspaceContextData] = None
 
 class CodeExecutionRequest(BaseModel):
     code: str
