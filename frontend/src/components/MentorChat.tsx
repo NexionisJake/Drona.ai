@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
-import { Send, User, Bot } from 'lucide-react';
+import { Send, User } from 'lucide-react';
 import { TextShimmer } from './TextShimmer';
 import { preprocessMarkdown } from '../utils/markdownUtils';
 
