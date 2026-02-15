@@ -47,7 +47,7 @@ const MentorChat: React.FC<MentorChatProps> = ({
                     <div key={idx} className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600/80' : 'bg-purple-600/80'
                             }`}>
-                            {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                            {msg.role === 'user' ? <User size={16} /> : <img src="/logo.png" alt="AI" className="w-5 h-5 object-contain" />}
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-lg p-3 overflow-hidden break-words ${msg.role === 'user'
@@ -64,7 +64,7 @@ const MentorChat: React.FC<MentorChatProps> = ({
                 {isStreaming && (!messages.length || messages[messages.length - 1].content === '') && (
                     <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0 animate-pulse">
-                            <Bot size={16} />
+                            <img src="/logo.png" alt="Thinking" className="w-5 h-5 object-contain" />
                         </div>
                         <div className="bg-[#161b22] border border-white/[0.06] rounded-lg p-3">
                             <TextShimmer className="text-sm text-purple-400">Thinking...</TextShimmer>
