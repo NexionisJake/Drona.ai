@@ -24,3 +24,5 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
+      - key: VITE_API_BASE_URL
+        sync: false # User must set this to the Backend Service URL (e.g., https://drona-backend.onrender.com)
